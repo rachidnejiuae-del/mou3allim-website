@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Profil professeur — Mou3allim</title>
+<link rel="stylesheet" href="src/style.css" />
+<style>
+  .profile-wrap { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 24px; }
+  .back-link:hover { color: var(--teal); }
+
+  .profile-header {
+    display: flex; gap: 20px; align-items: center; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; margin-bottom: 24px;
+  }
+  .profile-header img { width: 96px; height: 96px; border-radius: 20px; object-fit: cover; flex-shrink: 0; }
+  .profile-header h1 { font-size: 24px; margin-bottom: 4px; }
+  .profile-loc { display: flex; align-items: center; gap: 5px; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+
+  .section-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin: 28px 0 12px; }
+  .subject-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 14px 18px; margin-bottom: 8px;
+  }
+  .subject-row .price { font-weight: 800; color: var(--amber-dark); }
+
+  .action-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 16px; border-radius: 999px; border: none; font-weight: 700; font-size: 15px;
+    margin-top: 10px; color: white;
+  }
+
+  .review-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 10px; }
+  .review-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .review-name { font-weight: 700; font-size: 14px; }
+  .review-comment { font-size: 14px; color: var(--muted); }
+
+  .rate-stars { display: flex; gap: 6px; margin-bottom: 14px; }
+  .rate-stars svg { cursor: pointer; transition: transform 0.1s; }
+  .rate-stars svg:hover { transform: scale(1.15); }
+
+  .name-modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(28,28,30,0.5);
+    align-items: center; justify-content: center; padding: 24px; z-index: 200;
+  }
+  .name-modal-overlay.show { display: flex; }
+  .name-modal { background: var(--card); border-radius: var(--radius-lg); padding: 28px; max-width: 420px; width: 100%; }
+</style>
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<div class="profile-wrap">
+  <a href="search.html" class="back-link" data-i18n="back_to_search">← Retour à la recherche</a>
+  <div id="profileContent">
+    <div class="skeleton" style="height:150px; border-radius:24px; margin-bottom:24px;"></div>
+    <div class="skeleton" style="height:200px; border-radius:16px;"></div>
+  </div>
+</div>
+
+<!-- Name popup for anonymous ratings -->
+<div class="name-modal-overlay" id="nameModal">
+  <div class="name-modal">
+    <h3 style="margin-bottom:6px;" data-i18n="modal_your_name">Votre prénom</h3>
+    <p class="text-muted" style="font-size:13px;margin-bottom:16px;" data-i18n="modal_name_hint">Pour publier votre avis, entrez votre prénom.</p>
+    <div class="field">
+      <input class="input" id="guestNameInput" data-i18n-placeholder="modal_name_placeholder" placeholder="Ex: Ahmed, Fatima..." autofocus />
+    </div>
+    <div class="field">
+      <textarea class="textarea input" id="guestCommentInput" data-i18n-placeholder="modal_comment_placeholder" placeholder="Commentaire (optionnel)..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-block" id="submitGuestRating" data-i18n="modal_send">Envoyer mon avis</button>
+    <button class="btn btn-block" style="margin-top:8px; color:var(--muted);" id="cancelGuestRating" data-i18n="modal_cancel">Annuler</button>
+  </div>
+</div>
+
+<script src="src/api.js"></script>
+<script src="src/i18n.js"></script>
+<script src="src/nav.js"></script>
+<script>
+  renderNav();
+  const teacherId = getQueryParam('id');
+  let selectedRating = 0;
+  let teacherData = null;
+
+  async function loadProfile() {
+    const el = document.getElementById('profileContent');
+    if (!teacherId) { el.innerHTML = '<p>Professeur introuvable.</p>'; return; }
+    try {
+      const [profileRes, ratingsRes] = await Promise.all([
+        api.getTeacher(teacherId),
+        api.getRatings(teacherId),
+      ]);
+      teacherData = profileRes.teacher;
+      renderProfile(teacherData, ratingsRes.ratings || []);
+    } catch (err) {
+      el.innerHTML = `<div class="empty-state"><p>${escapeHtml(err.message)}</p></div>`;
+    }
+  }
+
+  function renderProfile(t, ratings) {
+    const location = (t.areas && t.areas.length > 0) ? `${t.areas.join(', ')} — ${t.governorate}` : t.governorate;
+    document.title = `${t.full_name} — Mou3allim`;
+
+    document.getElementById('profileContent').innerHTML = `
+      <div class="profile-header">
+        <img src="${getAvatar(t)}" alt="" onerror="this.src='${MALE_AVATAR}'" />
+        <div>
+          <h1 class="display">${escapeHtml(t.full_name)}</h1>
+          <div class="profile-loc">📍 ${escapeHtml(location)}</div>
+          <div>${starsHtml(t.rating, 16)} <span style="font-size:13px;color:var(--muted);">${Number(t.rating||0).toFixed(1)} (${t.rating_count||0} avis)</span></div>
+        </div>
+      </div>
+
+      ${t.bio ? `<p style="color:var(--ink-soft); margin-bottom: 8px;">${escapeHtml(t.bio)}</p>` : ''}
+
+      <div class="section-title">${window.t('profile_subjects')}</div>
+      ${(t.subjects||[]).map(s => `
+        <div class="subject-row">
+          <span style="font-weight:600;">${escapeHtml(s.name)}</span>
+          <span class="price">${s.price_per_hour} DT/h</span>
+        </div>
+      `).join('')}
+
+      <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);">
+        📞 ${window.t('profile_call')} ${escapeHtml(t.phone)}
+      </a>
+
+      ${t.cv_url ? `
+        <a href="${t.cv_url}" target="_blank" class="action-btn" style="background:var(--amber);">
+          📎 ${window.t('profile_cv')}
+        </a>
+      ` : ''}
+
+      <div class="section-title">${window.t('profile_rate')}</div>
+      <div class="rate-stars" id="rateStars">
+        ${[1,2,3,4,5].map(n => `
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E8A33D" stroke-width="1.5" data-star="${n}">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        `).join('')}
+      </div>
+      <div id="ratingSubmittedMsg" style="display:none; color: var(--teal); font-weight:600; margin-bottom:16px;">✓ ${window.t('profile_rating_sent').replace('✓ ', '')}</div>
+
+      ${ratings.length > 0 ? `
+        <div class="section-title">${window.t('profile_reviews')} (${ratings.length})</div>
+        ${ratings.map(r => `
+          <div class="review-card">
+            <div class="review-head">
+              <span class="review-name">${escapeHtml(r.parent_name)}</span>
+              ${starsHtml(r.score, 12)}
+            </div>
+            ${r.comment ? `<div class="review-comment">${escapeHtml(r.comment)}</div>` : ''}
+          </div>
+        `).join('')}
+      ` : `<p class="text-muted" style="font-size:14px;">${window.t('profile_no_reviews')}</p>`}
+    `;
+
+    document.querySelectorAll('#rateStars svg').forEach(star => {
+      star.addEventListener('click', () => {
+        selectedRating = parseInt(star.dataset.star, 10);
+        highlightStars(selectedRating);
+        if (auth.isLoggedIn()) {
+          submitRating(selectedRating, null, null);
+        } else {
+          document.getElementById('nameModal').classList.add('show');
+        }
+      });
+    });
+  }
+
+  function highlightStars(n) {
+    document.querySelectorAll('#rateStars svg').forEach(star => {
+      const s = parseInt(star.dataset.star, 10);
+      star.setAttribute('fill', s <= n ? '#E8A33D' : 'none');
+    });
+  }
+
+  async function submitRating(score, guestName, comment) {
+    try {
+      await api.rateTeacher(teacherId, { score, guest_name: guestName, comment });
+      document.getElementById('ratingSubmittedMsg').style.display = 'block';
+      showToast('Merci pour votre avis !');
+      setTimeout(loadProfile, 800);
+    } catch (err) {
+      showToast('Erreur: ' + err.message);
+    }
+  }
+
+  document.getElementById('submitGuestRating').addEventListener('click', () => {
+    const name = document.getElementById('guestNameInput').value.trim();
+    const comment = document.getElementById('guestCommentInput').value.trim();
+    if (!name) { showToast('Entrez votre prénom.'); return; }
+    document.getElementById('nameModal').classList.remove('show');
+    submitRating(selectedRating, name, comment || null);
+  });
+  document.getElementById('cancelGuestRating').addEventListener('click', () => {
+    document.getElementById('nameModal').classList.remove('show');
+    selectedRating = 0;
+    highlightStars(0);
+  });
+
+  loadProfile();
+</script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Connexion — Mou3allim</title>
+<link rel="stylesheet" href="src/style.css" />
+<style>
+  .auth-wrap { min-height: calc(100vh - 72px); display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+  .auth-card { max-width: 420px; width: 100%; }
+  .auth-card h1 { font-size: 26px; text-align: center; margin-bottom: 6px; }
+  .auth-card .sub { text-align: center; color: var(--muted); margin-bottom: 28px; font-size: 14px; }
+  .gender-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  .gender-btn {
+    flex: 1; padding: 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+    background: var(--card); text-align: center; font-weight: 600; font-size: 14px;
+  }
+  .gender-btn.active { background: var(--teal); border-color: var(--teal); color: white; }
+  .switch-link { text-align: center; margin-top: 20px; font-size: 14px; font-weight: 600; color: var(--teal); }
+  .otp-input { text-align: center; font-size: 26px; font-weight: 700; letter-spacing: 8px; }
+  .forgot-link { text-align: center; margin-top: 10px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<div class="auth-wrap">
+  <div class="auth-card" id="authCard"></div>
+</div>
+
+<script src="src/api.js"></script>
+<script src="src/i18n.js"></script>
+<script src="src/nav.js"></script>
+<script>
+  renderNav();
+  const role = getQueryParam('role') || 'parent';
+  let mode = 'login'; // login | register | otp | forgot | reset_otp | new_password
+  let pendingPhone = '';
+  let selectedGender = 'male';
+
+  function render() {
+    const card = document.getElementById('authCard');
+
+    if (mode === 'login' || mode === 'register') {
+      card.innerHTML = `
+        <h1 class="display">${role === 'teacher' ? t('auth_teacher_space') : t('auth_parent_space')}</h1>
+        <p class="sub">${mode === 'login' ? t('auth_login_sub') : t('auth_register_sub')}</p>
+        <form id="authForm">
+          ${mode === 'register' ? `
+            <div class="field"><label>${t('auth_full_name')}</label><input class="input" id="fullName" required /></div>
+            <label style="font-size:13px;font-weight:700;display:block;margin-bottom:8px;">${t('auth_gender')}</label>
+            <div class="gender-row">
+              <button type="button" class="gender-btn ${selectedGender==='male'?'active':''}" data-gender="male">👨 ${t('auth_male')}</button>
+              <button type="button" class="gender-btn ${selectedGender==='female'?'active':''}" data-gender="female">👩 ${t('auth_female')}</button>
+            </div>
+          ` : ''}
+          <div class="field"><label>${t('auth_phone')}</label><input class="input" id="phone" placeholder="+216 XX XXX XXX" required /></div>
+          <div class="field"><label>${t('auth_password')}</label><input class="input" type="password" id="password" required /></div>
+          <button type="submit" class="btn btn-primary btn-block" id="submitBtn">${mode==='login'?t('auth_login_btn'):t('auth_register_btn')}</button>
+        </form>
+        ${mode === 'login' ? `<div class="forgot-link"><a href="#" id="forgotLink">${t('auth_forgot')}</a></div>` : ''}
+        <div class="switch-link"><a href="#" id="switchModeLink">${mode==='login' ? t('auth_switch_to_register') : t('auth_switch_to_login')}</a></div>
+      `;
+      document.getElementById('authForm').addEventListener('submit', handleSubmit);
+      document.getElementById('switchModeLink').addEventListener('click', (e) => { e.preventDefault(); mode = mode==='login'?'register':'login'; render(); });
+      if (mode === 'login') document.getElementById('forgotLink').addEventListener('click', (e) => { e.preventDefault(); mode='forgot'; render(); });
+      if (mode === 'register') {
+        card.querySelectorAll('.gender-btn').forEach(btn => btn.addEventListener('click', () => {
+          selectedGender = btn.dataset.gender; render();
+        }));
+      }
+    }
+
+    if (mode === 'otp') {
+      card.innerHTML = `
+        <h1 class="display">${t('auth_otp_title')}</h1>
+        <p class="sub">${t('auth_otp_sub')} ${escapeHtml(pendingPhone)}. ${t('auth_otp_valid')}</p>
+        <form id="otpForm">
+          <div class="field"><input class="input otp-input" id="otpCode" maxlength="6" placeholder="000000" required /></div>
+          <button type="submit" class="btn btn-primary btn-block">${t('auth_verify')}</button>
+        </form>
+        <div class="switch-link"><a href="#" id="resendLink">${t('auth_resend')}</a></div>
+        <p class="sub" style="margin-top:16px;">${t('auth_dev_note')}</p>
+      `;
+      document.getElementById('otpForm').addEventListener('submit', handleVerifyOtp);
+      document.getElementById('resendLink').addEventListener('click', async (e) => {
+        e.preventDefault();
+        try { await api.sendOtp(pendingPhone); showToast('Code renvoyé.'); } catch (err) { showToast(err.message); }
+      });
+    }
+
+    if (mode === 'forgot') {
+      card.innerHTML = `
+        <h1 class="display">${t('auth_forgot_title')}</h1>
+        <p class="sub">${t('auth_forgot_sub')}</p>
+        <form id="forgotForm">
+          <div class="field"><input class="input" id="forgotPhone" placeholder="+216 XX XXX XXX" required /></div>
+          <button type="submit" class="btn btn-primary btn-block">${t('auth_send_code')}</button>
+        </form>
+        <div class="switch-link"><a href="#" id="backToLogin">${t('auth_back_to_login')}</a></div>
+      `;
+      document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        pendingPhone = document.getElementById('forgotPhone').value.trim();
+        try {
+          await api.sendOtp(pendingPhone);
+          mode = 'reset_otp'; render();
+        } catch (err) { showToast(err.message); }
+      });
+      document.getElementById('backToLogin').addEventListener('click', (e) => { e.preventDefault(); mode='login'; render(); });
+    }
+
+    if (mode === 'reset_otp') {
+      card.innerHTML = `
+        <h1 class="display">${t('auth_enter_code')}</h1>
+        <p class="sub">${t('auth_otp_sub')} ${escapeHtml(pendingPhone)}.</p>
+        <form id="resetOtpForm">
+          <div class="field"><input class="input otp-input" id="resetOtpCode" maxlength="6" placeholder="000000" required /></div>
+          <button type="submit" class="btn btn-primary btn-block">${t('auth_confirm')}</button>
+        </form>
+      `;
+      document.getElementById('resetOtpForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        window._resetCode = document.getElementById('resetOtpCode').value.trim();
+        mode = 'new_password'; render();
+      });
+    }
+
+    if (mode === 'new_password') {
+      card.innerHTML = `
+        <h1 class="display">${t('auth_new_password')}</h1>
+        <p class="sub">${t('auth_new_password_sub')}</p>
+        <form id="newPasswordForm">
+          <div class="field"><input class="input" type="password" id="newPassword" placeholder="${t('auth_min_chars')}" required /></div>
+          <div class="field"><input class="input" type="password" id="confirmPassword" placeholder="${t('auth_confirm_password')}" required /></div>
+          <button type="submit" class="btn btn-primary btn-block">${t('auth_reset')}</button>
+        </form>
+      `;
+      document.getElementById('newPasswordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const p1 = document.getElementById('newPassword').value;
+        const p2 = document.getElementById('confirmPassword').value;
+        if (p1.length < 6) return showToast('Minimum 6 caractères.');
+        if (p1 !== p2) return showToast('Les mots de passe ne correspondent pas.');
+        try {
+          await api.resetPassword(pendingPhone, window._resetCode, p1);
+          showToast('Mot de passe réinitialisé !');
+          mode = 'login'; render();
+        } catch (err) { showToast(err.message); }
+      });
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+
+    try {
+      if (mode === 'login') {
+        const data = await api.login({ phone, password });
+        auth.setSession(data.token, data.user);
+        window.location.href = data.user.role === 'teacher' ? 'dashboard.html' : 'search.html';
+      } else {
+        const fullName = document.getElementById('fullName').value.trim();
+        if (!fullName) { showToast('Le nom complet est requis.'); btn.disabled=false; btn.textContent="S'inscrire"; return; }
+        const data = await api.register({ phone, password, full_name: fullName, role, gender: selectedGender });
+        auth.setSession(data.token, data.user);
+        if (role === 'teacher') {
+          await api.sendOtp(phone);
+          pendingPhone = phone;
+          mode = 'otp'; render();
+        } else {
+          window.location.href = 'search.html';
+        }
+      }
+    } catch (err) {
+      showToast(err.message);
+      btn.disabled = false;
+      btn.textContent = mode === 'login' ? 'Se connecter' : "S'inscrire";
+    }
+  }
+
+  async function handleVerifyOtp(e) {
+    e.preventDefault();
+    const code = document.getElementById('otpCode').value.trim();
+    try {
+      await api.verifyOtp(pendingPhone, code);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      showToast(err.message);
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>

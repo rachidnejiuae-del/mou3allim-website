@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Activer mon abonnement — Mou3allim</title>
+<link rel="stylesheet" href="src/style.css" />
+<style>
+  .pay-hero {
+    padding: 56px 24px 40px;
+    background: linear-gradient(180deg, #FAF8F4 0%, #F3EFE6 100%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .pay-hero .tile-bg {
+    position: absolute; inset: 0; opacity: 0.5; pointer-events: none;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(14,124,102,0.06) 0, rgba(14,124,102,0.06) 40px, transparent 41px),
+      radial-gradient(circle at 85% 15%, rgba(232,163,61,0.08) 0, rgba(232,163,61,0.08) 55px, transparent 56px);
+  }
+  .pay-hero-inner { position: relative; z-index: 2; max-width: 560px; margin: 0 auto; }
+  .pay-hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--teal-tint); color: var(--teal-dark);
+    padding: 8px 18px; border-radius: 999px; font-size: 13px; font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .pay-hero h1 { font-size: 38px; margin-bottom: 12px; }
+  .pay-hero p.lede { font-size: 16px; color: var(--ink-soft); }
+
+  .pay-wrap { max-width: 640px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  .pay-step {
+    display: flex; gap: 20px; padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pay-step:last-of-type { border-bottom: none; }
+  .pay-step-num {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--teal); color: white; display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px;
+  }
+  .pay-step-content { flex: 1; padding-top: 4px; }
+  .pay-step-content h3 { font-size: 17px; margin-bottom: 6px; }
+  .pay-step-content p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+  .method-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .method-tab {
+    flex: 1; padding: 10px; text-align: center; border-radius: 10px; border: 1.5px solid var(--border);
+    background: var(--card); font-size: 13px; font-weight: 700; color: var(--ink-soft); cursor: pointer;
+  }
+  .method-tab.active { background: var(--teal); border-color: var(--teal); color: white; }
+
+  .method-panel { display: none; }
+  .method-panel.active { display: block; }
+
+  .flouci-card {
+    background: var(--card); border: 1.5px solid var(--teal); border-radius: var(--radius-lg);
+    padding: 28px; margin-top: 4px; text-align: center;
+  }
+  .flouci-card .flouci-label {
+    font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 8px;
+  }
+  .flouci-card .flouci-number {
+    font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; color: var(--teal-dark);
+    letter-spacing: 0.03em; margin-bottom: 4px; word-break: break-word;
+  }
+  .flouci-card .flouci-name { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+  .copy-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--teal-tint); color: var(--teal-dark); border: none;
+    padding: 10px 20px; border-radius: 999px; font-weight: 700; font-size: 13px;
+  }
+  .copy-btn.copied { background: var(--teal); color: white; }
+
+  .price-options { display: flex; gap: 12px; margin-top: 20px; }
+  .price-option {
+    flex: 1; background: var(--sand); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 16px; text-align: center;
+  }
+  .price-option .plan-name { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .price-option .plan-price { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--ink); }
+  .price-option .plan-note { font-size: 11px; color: var(--teal-dark); font-weight: 700; margin-top: 4px; }
+
+  .whatsapp-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: #25D366; color: white; padding: 16px; border-radius: 999px;
+    font-weight: 700; font-size: 15px; margin-top: 12px;
+  }
+  .whatsapp-btn:hover { background: #1fb956; }
+
+  .note-box {
+    background: #FFF3DD; border-radius: var(--radius-sm); padding: 16px 20px;
+    font-size: 13px; color: #8A6116; margin-top: 20px; display: flex; gap: 10px; align-items: flex-start;
+  }
+
+  @media (max-width: 640px) {
+    .pay-hero h1 { font-size: 28px; }
+    .pay-step { gap: 14px; }
+    .price-options { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<section class="pay-hero">
+  <div class="tile-bg"></div>
+  <div class="pay-hero-inner">
+    <span class="eyebrow" data-i18n="pay_eyebrow">🎓 Activation rapide</span>
+    <h1 class="display" data-i18n="pay_title">Activez votre visibilité</h1>
+    <p class="lede" data-i18n="pay_lede">Effectuez votre paiement, recevez votre code d'activation, et apparaissez dans les recherches en quelques minutes.</p>
+  </div>
+</section>
+
+<div class="pay-wrap">
+
+  <div class="price-options">
+    <div class="price-option">
+      <div class="plan-name" data-i18n="pay_monthly">Mensuel</div>
+      <div class="plan-price">15 DT</div>
+    </div>
+    <div class="price-option">
+      <div class="plan-name" data-i18n="pay_yearly">Annuel</div>
+      <div class="plan-price">120 DT</div>
+      <div class="plan-note" data-i18n="pay_yearly_save">Économisez 60 DT</div>
+    </div>
+  </div>
+
+  <div class="pay-step" style="margin-top: 8px;">
+    <div class="pay-step-num">1</div>
+    <div class="pay-step-content">
+      <h3 data-i18n="pay_step1_title">Choisissez votre méthode de paiement</h3>
+      <p data-i18n="pay_step1_desc">Envoyez le montant correspondant à votre plan, par Flouci ou par virement CCP.</p>
+
+      <div class="method-tabs">
+        <button class="method-tab active" id="tabFlouci">📱 Flouci</button>
+        <button class="method-tab" id="tabCcp">🏤 CCP</button>
+      </div>
+
+      <div class="method-panel active" id="panelFlouci">
+        <div class="flouci-card">
+          <div class="flouci-label" data-i18n="pay_flouci_label">Numéro Flouci</div>
+          <div class="flouci-number" id="flouciNumber">+216 28 357 354</div>
+          <div class="flouci-name" data-i18n="pay_flouci_name">Mou3allim — Compte officiel</div>
+          <button class="copy-btn" id="copyFlouciBtn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8" rx="1"/><path d="M5 5h7v7"/></svg>
+            <span id="copyFlouciText" data-i18n="pay_copy">Copier le numéro</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="method-panel" id="panelCcp">
+        <div class="flouci-card">
+          <div class="flouci-label" data-i18n="pay_ccp_label">Compte CCP</div>
+          <div class="flouci-number" id="ccpNumber">13130593</div>
+          <div class="flouci-name" data-i18n="pay_flouci_name">Mou3allim — Compte officiel</div>
+          <button class="copy-btn" id="copyCcpBtn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8" rx="1"/><path d="M5 5h7v7"/></svg>
+            <span id="copyCcpText" data-i18n="pay_copy">Copier le numéro</span>
+          </button>
+        </div>
+        <div class="note-box">
+          <span>🏤</span>
+          <span data-i18n="pay_ccp_note">Vous pouvez déposer des espèces dans n'importe quel bureau de poste en donnant ce numéro de compte, ou faire un virement si vous avez vous-même un compte CCP. Un reçu vous sera remis — gardez-le comme preuve de paiement.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pay-step">
+    <div class="pay-step-num">2</div>
+    <div class="pay-step-content">
+      <h3 data-i18n="pay_step2_title">Envoyez-nous la preuve de paiement</h3>
+      <p data-i18n="pay_step2_desc">Une capture d'écran (Flouci) ou une photo du reçu (poste) suffit. Envoyez-la nous sur WhatsApp avec votre numéro de téléphone inscrit sur l'application.</p>
+      <a href="https://wa.me/21628357354" target="_blank" class="whatsapp-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 5L2 22l5.2-1.3c1.5.8 3.1 1.2 4.8 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.5 0-3-.4-4.3-1.1l-.3-.2-3.2.8.9-3.1-.2-.3C4.1 15 3.7 13.5 3.7 12c0-4.6 3.7-8.3 8.3-8.3s8.3 3.7 8.3 8.3-3.7 8.3-8.3 8.3zm4.5-6.2c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.4 3.8 3.4.5.2 1 .4 1.3.5.5.2 1 .1 1.4.1.4-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.4-.3z"/></svg>
+        <span data-i18n="pay_whatsapp">Envoyer la preuve sur WhatsApp</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="pay-step">
+    <div class="pay-step-num">3</div>
+    <div class="pay-step-content">
+      <h3 data-i18n="pay_step3_title">Recevez votre code</h3>
+      <p data-i18n="pay_step3_desc">Nous vérifions votre paiement et vous envoyons votre code d'activation par WhatsApp, généralement en moins d'une heure.</p>
+    </div>
+  </div>
+
+  <div class="pay-step">
+    <div class="pay-step-num">4</div>
+    <div class="pay-step-content">
+      <h3 data-i18n="pay_step4_title">Activez-le dans votre espace</h3>
+      <p data-i18n="pay_step4_desc">Entrez le code dans votre tableau de bord professeur pour activer votre visibilité immédiatement.</p>
+      <a href="dashboard.html" class="btn btn-primary" style="margin-top:12px;" data-i18n="pay_go_dashboard">Aller à mon espace professeur</a>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <span>💡</span>
+    <span data-i18n="pay_note">Le paiement en ligne automatique arrive bientôt. En attendant, cette méthode manuelle garantit une activation rapide et sécurisée.</span>
+  </div>
+
+</div>
+
+<script src="src/api.js"></script>
+<script src="src/i18n.js"></script>
+<script src="src/nav.js"></script>
+<script>
+  renderNav();
+
+  // TODO: replace with your real Flouci-linked phone number
+  const FLOUCI_NUMBER = '+216 28 357 354';
+  // Your CCP account number (last 8 digits — works for internal La Poste transfers)
+  const CCP_NUMBER = '13130593';
+
+  document.getElementById('flouciNumber').textContent = FLOUCI_NUMBER;
+  document.getElementById('ccpNumber').textContent = CCP_NUMBER;
+
+  function setupCopyButton(btnId, textId, value) {
+    document.getElementById(btnId).addEventListener('click', () => {
+      navigator.clipboard.writeText(value.replace(/\s/g, '')).then(() => {
+        const btn = document.getElementById(btnId);
+        const text = document.getElementById(textId);
+        const original = text.textContent;
+        btn.classList.add('copied');
+        text.textContent = t('pay_copied');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          text.textContent = original;
+        }, 2000);
+      });
+    });
+  }
+  setupCopyButton('copyFlouciBtn', 'copyFlouciText', FLOUCI_NUMBER);
+  setupCopyButton('copyCcpBtn', 'copyCcpText', CCP_NUMBER);
+
+  function switchMethod(method) {
+    document.getElementById('tabFlouci').classList.toggle('active', method === 'flouci');
+    document.getElementById('tabCcp').classList.toggle('active', method === 'ccp');
+    document.getElementById('panelFlouci').classList.toggle('active', method === 'flouci');
+    document.getElementById('panelCcp').classList.toggle('active', method === 'ccp');
+  }
+  document.getElementById('tabFlouci').addEventListener('click', () => switchMethod('flouci'));
+  document.getElementById('tabCcp').addEventListener('click', () => switchMethod('ccp'));
+</script>
+</body>
+</html>
