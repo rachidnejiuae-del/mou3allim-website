@@ -64,7 +64,11 @@
       `;
       document.getElementById('authForm').addEventListener('submit', handleSubmit);
       document.getElementById('switchModeLink').addEventListener('click', (e) => { e.preventDefault(); mode = mode==='login'?'register':'login'; render(); });
-      if (mode === 'login') document.getElementById('forgotLink').addEventListener('click', (e) => { e.preventDefault(); mode='forgot'; render(); });
+      if (mode === 'login') document.getElementById('forgotLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        // Self-service reset needs SMS, which isn't live yet — route to WhatsApp support.
+        window.open('https://wa.me/21628357354?text=' + encodeURIComponent("Bonjour, j'ai oublié mon mot de passe Mou3allim."), '_blank');
+      });
       if (mode === 'register') {
         card.querySelectorAll('.gender-btn').forEach(btn => btn.addEventListener('click', () => {
           selectedGender = btn.dataset.gender; render();
@@ -170,10 +174,15 @@
         if (!fullName) { showToast('Le nom complet est requis.'); btn.disabled=false; btn.textContent="S'inscrire"; return; }
         const data = await api.register({ phone, password, full_name: fullName, role, gender: selectedGender });
         auth.setSession(data.token, data.user);
-        if (role === 'teacher') {
+        // Only route teachers into the SMS step when the backend says it's live
+        // (otp_required). No SMS provider yet, so teachers go straight to the
+        // dashboard — admin approval is the real gate on search visibility.
+        if (role === 'teacher' && data.otp_required) {
           await api.sendOtp(phone);
           pendingPhone = phone;
           mode = 'otp'; render();
+        } else if (role === 'teacher') {
+          window.location.href = 'dashboard.html';
         } else {
           window.location.href = 'search.html';
         }
