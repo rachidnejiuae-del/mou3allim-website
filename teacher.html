@@ -129,6 +129,14 @@
         📞 ${window.t('profile_call')} ${escapeHtml(t.phone)}
       </a>
 
+      <a href="https://wa.me/${t.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Bonjour, je vous contacte via Mou3allim.')}" target="_blank" class="action-btn" style="background:#25D366;">
+        💬 WhatsApp
+      </a>
+
+      <div style="background:#FFF8E7;border:1px solid #F0D48A;border-radius:12px;padding:12px 14px;margin-top:14px;font-size:13px;color:#7A5E12;line-height:1.5;">
+        ⚠️ <strong>Sécurité :</strong> Mou3allim est une plateforme de mise en relation et ne vérifie pas l'identité des professeurs. Il vous appartient de vérifier l'identité, les diplômes et les références de tout professeur avant tout cours — en particulier pour les cours à domicile ou impliquant des mineurs.
+      </div>
+
       ${t.cv_url ? `
         <a href="${t.cv_url}" target="_blank" class="action-btn" style="background:var(--amber);">
           📎 ${window.t('profile_cv')}
@@ -142,6 +150,10 @@
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         `).join('')}
+      </div>
+      <div id="commentBox" style="display:none; margin-bottom:16px;">
+        <textarea class="textarea input" id="ratingComment" placeholder="Votre commentaire (optionnel)..." style="margin-bottom:8px;"></textarea>
+        <button class="btn btn-primary btn-block" id="submitRatingBtn">Envoyer mon avis</button>
       </div>
       <div id="ratingSubmittedMsg" style="display:none; color: var(--teal); font-weight:600; margin-bottom:16px;">✓ ${window.t('profile_rating_sent').replace('✓ ', '')}</div>
 
@@ -164,15 +176,22 @@
         selectedRating = parseInt(star.dataset.star, 10);
         highlightStars(selectedRating);
         if (auth.isLoggedIn()) {
-          submitRating(selectedRating, null, null);
+          document.getElementById('commentBox').style.display = 'block';
         } else {
-          // Registration is required to rate. Send the parent to sign up /
-          // log in, then bring them straight back to this teacher's page.
           const back = encodeURIComponent('teacher.html?id=' + teacherId);
           window.location.href = `auth.html?role=parent&return=${back}`;
         }
       });
     });
+
+    const submitBtn = document.getElementById('submitRatingBtn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', () => {
+        if (!selectedRating) { showToast('Choisissez une note.'); return; }
+        const comment = document.getElementById('ratingComment').value.trim();
+        submitRating(selectedRating, null, comment || null);
+      });
+    }
   }
 
   function highlightStars(n) {
