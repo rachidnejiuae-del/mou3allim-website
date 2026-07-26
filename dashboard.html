@@ -62,7 +62,6 @@
   let selectedSubjects = []; // [{subject_id, name, price_per_hour}]
   let selectedGovernorate = null;
   let subscription = null;
-  let certificateFile = null;
   let cvFile = null;
 
   async function init() {
@@ -101,7 +100,7 @@
 
     document.getElementById('dashContent').innerHTML = `
       <div class="identity-card">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--teal-tint);display:flex;align-items:center;justify-content:center;font-size:18px;">👤</div>
+        <img src="${getAvatar(profileData)}" alt="" onerror="this.src='${MALE_AVATAR}'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" />
         <div>
           <div class="name">${escapeHtml(profileData.full_name)}</div>
           <div class="phone">${escapeHtml(profileData.phone)}</div>
@@ -113,12 +112,6 @@
           ⏱ ${days > 0 ? `${t('dash_sub_active')} — ${days} ${t('dash_sub_days_left')}` : t('dash_sub_expired')}
         </div>
       ` : ''}
-
-      <div class="cert-picker ${certificateFile || profileData.certificate_url ? 'has-file' : ''}" id="certPicker">
-        <span style="font-size:20px;">📄</span>
-        <span>${certificateFile ? t('dash_cert_new') : profileData.certificate_url ? t('dash_cert_existing') : t('dash_cert_add')}</span>
-        <input type="file" id="certInput" accept="image/*,.pdf" style="display:none;" />
-      </div>
 
       <div class="cert-picker ${cvFile || profileData.cv_url ? 'has-file' : ''}" id="cvPicker">
         <span style="font-size:20px;">📎</span>
@@ -241,11 +234,6 @@
   }
 
   function wireEvents() {
-    document.getElementById('certPicker').addEventListener('click', () => document.getElementById('certInput').click());
-    document.getElementById('certInput').addEventListener('change', (e) => {
-      certificateFile = e.target.files[0] || null;
-      render();
-    });
     document.getElementById('cvPicker').addEventListener('click', () => document.getElementById('cvInput').click());
     document.getElementById('cvInput').addEventListener('change', (e) => {
       cvFile = e.target.files[0] || null;
@@ -272,20 +260,6 @@
         subjects: selectedSubjects.map(s => ({ subject_id: s.subject_id, price_per_hour: parseFloat(s.price_per_hour) })),
         areas: selectedAreas,
       });
-
-      if (certificateFile) {
-        const formData = new FormData();
-        formData.append('certificate', certificateFile);
-        const res = await fetch(`${API_BASE_URL}/teachers/me/certificate`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${auth.getToken()}` },
-          body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erreur upload certificat');
-        profileData.certificate_url = data.certificate_url;
-        certificateFile = null;
-      }
 
       if (cvFile) {
         const formData = new FormData();
