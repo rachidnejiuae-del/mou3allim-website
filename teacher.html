@@ -166,7 +166,10 @@
         if (auth.isLoggedIn()) {
           submitRating(selectedRating, null, null);
         } else {
-          document.getElementById('nameModal').classList.add('show');
+          // Registration is required to rate. Send the parent to sign up /
+          // log in, then bring them straight back to this teacher's page.
+          const back = encodeURIComponent('teacher.html?id=' + teacherId);
+          window.location.href = `auth.html?role=parent&return=${back}`;
         }
       });
     });
