@@ -53,13 +53,13 @@
         <form id="authForm">
           ${mode === 'register' ? `
             <div class="field"><label>${t('auth_full_name')}</label><input class="input" id="fullName" required /></div>
-            <label style="font-size:13px;font-weight:700;display:block;margin-bottom:8px;">${t('auth_gender')}</label>
+            <label style="font-size:13px;font-weight:700;display:block;margin-bottom:8px;">${role === 'teacher' ? t('auth_gender') : 'Civilité'}</label>
             <div class="gender-row">
-              <button type="button" class="gender-btn ${selectedGender==='male'?'active':''}" data-gender="male">👨 ${t('auth_male')}</button>
-              <button type="button" class="gender-btn ${selectedGender==='female'?'active':''}" data-gender="female">👩 ${t('auth_female')}</button>
+              <button type="button" class="gender-btn ${selectedGender==='male'?'active':''}" data-gender="male">${role === 'teacher' ? '👨 ' + t('auth_male') : 'Mr'}</button>
+              <button type="button" class="gender-btn ${selectedGender==='female'?'active':''}" data-gender="female">${role === 'teacher' ? '👩 ' + t('auth_female') : 'Mme'}</button>
             </div>
           ` : ''}
-          ${mode === 'register' ? `
+          ${mode === 'register' && role === 'teacher' ? `
             <div class="field">
               <label>Question de sécurité</label>
               <select class="input" id="securityQuestion" required>
@@ -77,6 +77,12 @@
           ` : ''}
           <div class="field"><label>${t('auth_phone')}</label><input class="input" id="phone" placeholder="+216 XX XXX XXX" required /></div>
           <div class="field"><label>${t('auth_password')}</label><input class="input" type="password" id="password" required /></div>
+          ${mode === 'register' && role === 'teacher' ? `
+            <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px;cursor:pointer;">
+              <input type="checkbox" id="consentCheck" style="margin-top:3px;flex-shrink:0;" />
+              <span>J'accepte que mon numéro de téléphone soit visible par les parents afin qu'ils puissent me contacter, et j'accepte les conditions d'utilisation de Mou3allim.</span>
+            </label>
+          ` : ''}
           <button type="submit" class="btn btn-primary btn-block" id="submitBtn">${mode==='login'?t('auth_login_btn'):t('auth_register_btn')}</button>
         </form>
         ${mode === 'login' ? `<div class="forgot-link"><a href="#" id="forgotLink">${t('auth_forgot')}</a></div>` : ''}
@@ -86,7 +92,6 @@
       document.getElementById('switchModeLink').addEventListener('click', (e) => { e.preventDefault(); mode = mode==='login'?'register':'login'; render(); });
       if (mode === 'login') document.getElementById('forgotLink').addEventListener('click', (e) => {
         e.preventDefault();
-        // Self-service reset needs SMS, which isn't live yet — route to WhatsApp support.
         window.open('https://wa.me/21628357354?text=' + encodeURIComponent("Bonjour, j'ai oublié mon mot de passe Mou3allim."), '_blank');
       });
       if (mode === 'register') {
@@ -165,7 +170,7 @@
         e.preventDefault();
         const p1 = document.getElementById('newPassword').value;
         const p2 = document.getElementById('confirmPassword').value;
-        if (p1.length < 6) return showToast('Minimum 6 caractères.');
+        if (p1.length < 8) return showToast('Minimum 8 caractères.');
         if (p1 !== p2) return showToast('Les mots de passe ne correspondent pas.');
         try {
           await api.resetPassword(pendingPhone, window._resetCode, p1);
@@ -192,21 +197,32 @@
       } else {
         const fullName = document.getElementById('fullName').value.trim();
         if (!fullName) { showToast('Le nom complet est requis.'); btn.disabled=false; btn.textContent="S'inscrire"; return; }
-        const securityQuestion = document.getElementById('securityQuestion').value;
-        const securityAnswer = document.getElementById('securityAnswer').value.trim();
-        if (!securityQuestion || securityAnswer.length < 2) {
-          showToast('Choisissez une question de sécurité et une réponse.');
-          btn.disabled=false; btn.textContent="S'inscrire"; return;
+        if (role === 'teacher') {
+          const consent = document.getElementById('consentCheck');
+          if (!consent || !consent.checked) {
+            showToast('Veuillez accepter les conditions pour continuer.');
+            btn.disabled=false; btn.textContent="S'inscrire"; return;
+          }
         }
         if (password.length < 8) {
           showToast('Le mot de passe doit contenir au moins 8 caractères.');
           btn.disabled=false; btn.textContent="S'inscrire"; return;
         }
-        const data = await api.register({ phone, password, full_name: fullName, role, gender: selectedGender, security_question: securityQuestion, security_answer: securityAnswer });
+        const payload = { phone, password, full_name: fullName, role, gender: selectedGender };
+        // Security question is only for teachers (used to help verify a manual
+        // password reset). Parents don't set one.
+        if (role === 'teacher') {
+          const securityQuestion = document.getElementById('securityQuestion').value;
+          const securityAnswer = document.getElementById('securityAnswer').value.trim();
+          if (!securityQuestion || securityAnswer.length < 2) {
+            showToast('Choisissez une question de sécurité et une réponse.');
+            btn.disabled=false; btn.textContent="S'inscrire"; return;
+          }
+          payload.security_question = securityQuestion;
+          payload.security_answer = securityAnswer;
+        }
+        const data = await api.register(payload);
         auth.setSession(data.token, data.user);
-        // Only route teachers into the SMS step when the backend says it's live
-        // (otp_required). No SMS provider yet, so teachers go straight to the
-        // dashboard — admin approval is the real gate on search visibility.
         if (role === 'teacher' && data.otp_required) {
           await api.sendOtp(phone);
           pendingPhone = phone;
