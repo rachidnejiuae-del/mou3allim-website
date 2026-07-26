@@ -55,6 +55,22 @@
               <button type="button" class="gender-btn ${selectedGender==='female'?'active':''}" data-gender="female">👩 ${t('auth_female')}</button>
             </div>
           ` : ''}
+          ${mode === 'register' ? `
+            <div class="field">
+              <label>Question de sécurité</label>
+              <select class="input" id="securityQuestion" required>
+                <option value="">— Choisissez une question —</option>
+                <option value="Quel est le nom de votre école primaire ?">Quel est le nom de votre école primaire ?</option>
+                <option value="Quel est le prénom de votre mère ?">Quel est le prénom de votre mère ?</option>
+                <option value="Dans quelle ville êtes-vous né(e) ?">Dans quelle ville êtes-vous né(e) ?</option>
+                <option value="Quel était votre surnom d'enfance ?">Quel était votre surnom d'enfance ?</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Réponse secrète</label>
+              <input class="input" id="securityAnswer" placeholder="Servira à vérifier votre identité" required />
+            </div>
+          ` : ''}
           <div class="field"><label>${t('auth_phone')}</label><input class="input" id="phone" placeholder="+216 XX XXX XXX" required /></div>
           <div class="field"><label>${t('auth_password')}</label><input class="input" type="password" id="password" required /></div>
           <button type="submit" class="btn btn-primary btn-block" id="submitBtn">${mode==='login'?t('auth_login_btn'):t('auth_register_btn')}</button>
@@ -172,7 +188,17 @@
       } else {
         const fullName = document.getElementById('fullName').value.trim();
         if (!fullName) { showToast('Le nom complet est requis.'); btn.disabled=false; btn.textContent="S'inscrire"; return; }
-        const data = await api.register({ phone, password, full_name: fullName, role, gender: selectedGender });
+        const securityQuestion = document.getElementById('securityQuestion').value;
+        const securityAnswer = document.getElementById('securityAnswer').value.trim();
+        if (!securityQuestion || securityAnswer.length < 2) {
+          showToast('Choisissez une question de sécurité et une réponse.');
+          btn.disabled=false; btn.textContent="S'inscrire"; return;
+        }
+        if (password.length < 8) {
+          showToast('Le mot de passe doit contenir au moins 8 caractères.');
+          btn.disabled=false; btn.textContent="S'inscrire"; return;
+        }
+        const data = await api.register({ phone, password, full_name: fullName, role, gender: selectedGender, security_question: securityQuestion, security_answer: securityAnswer });
         auth.setSession(data.token, data.user);
         // Only route teachers into the SMS step when the backend says it's live
         // (otp_required). No SMS provider yet, so teachers go straight to the
