@@ -80,7 +80,7 @@
           ${mode === 'register' && role === 'teacher' ? `
             <label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px;cursor:pointer;">
               <input type="checkbox" id="consentCheck" style="margin-top:3px;flex-shrink:0;" />
-              <span>J'accepte que mon numéro de téléphone soit visible par les parents afin qu'ils puissent me contacter, et j'accepte les conditions d'utilisation de Mou3allim.</span>
+              <span>J'accepte que mon numéro de téléphone soit visible par les parents afin qu'ils puissent me contacter, et j'accepte les <a href="conditions.html" target="_blank" onclick="event.stopPropagation()" style="color:var(--teal-dark);text-decoration:underline;">conditions d'utilisation</a> de Mou3allim.</span>
             </label>
           ` : ''}
           <button type="submit" class="btn btn-primary btn-block" id="submitBtn">${mode==='login'?t('auth_login_btn'):t('auth_register_btn')}</button>
