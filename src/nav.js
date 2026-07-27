@@ -26,18 +26,16 @@ function renderNav(active) {
         </a>
         <div class="nav-links">
           <a href="search.html" class="nav-link nav-link-desktop" data-i18n="nav_find_teacher">${t('nav_find_teacher')}</a>
-          <div class="lang-switch">
-            <button class="lang-btn ${lang === 'fr' ? 'active' : ''}" id="langFr">FR</button>
-            <button class="lang-btn ${lang === 'ar' ? 'active' : ''}" id="langAr">عربي</button>
-          </div>
           ${rightSide}
         </div>
       </div>
     </nav>
   `;
 
-  document.getElementById('langFr').addEventListener('click', () => { setLang('fr'); renderNav(active); });
-  document.getElementById('langAr').addEventListener('click', () => { setLang('ar'); renderNav(active); });
+  // Arabic temporarily hidden until it is translated properly. Force French so
+  // no one is stuck on a half-translated Arabic view. Re-enable by restoring the
+  // lang-switch block above and these listeners.
+  if (getLang() !== 'fr') setLang('fr');
   const logoutBtn = document.getElementById('navLogoutBtn');
   if (logoutBtn) logoutBtn.addEventListener('click', () => { auth.clear(); window.location.href = 'index.html'; });
 
