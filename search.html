@@ -66,6 +66,14 @@
       <div class="filter-label" data-i18n="filter_area">Quartier / Zone</div>
       <div class="filter-scroll" id="areaChips"></div>
     </div>
+    <div class="filter-row">
+      <div class="filter-label">Niveau</div>
+      <div class="filter-scroll" id="levelChips"></div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-label">Diplôme du professeur (optionnel)</div>
+      <div class="filter-scroll" id="degreeChips"></div>
+    </div>
   </div>
 </div>
 
@@ -84,7 +92,7 @@
 <script>
   renderNav('search');
 
-  let state = { subject: null, governorate: null, area: null, q: getQueryParam('q') || '' };
+  let state = { subject: null, governorate: null, area: null, level: null, degree: null, q: getQueryParam('q') || '' };
 
   document.getElementById('searchInput').value = state.q;
 
@@ -109,6 +117,13 @@
       window._govs = govRes.governorates;
       renderSubjectChips();
       renderGovChips();
+      try {
+        const [lvlRes, degRes] = await Promise.all([api.getLevels(), api.getDegrees()]);
+        window._levels = (lvlRes.levels || []).flatMap(g => g.items);
+        window._degrees = degRes.degrees || [];
+        renderLevelChips();
+        renderDegreeChips();
+      } catch (e) { console.warn('level/degree lookup failed', e.message); }
     } catch (err) {
       console.warn('Lookup failed', err.message);
     }
@@ -177,6 +192,36 @@
     });
   }
 
+  function renderLevelChips() {
+    const el = document.getElementById('levelChips');
+    if (!el || !window._levels) return;
+    el.innerHTML = ['Tous les niveaux', ...window._levels].map(l => {
+      const active = (l === 'Tous les niveaux' && !state.level) || l === state.level;
+      return `<button class="chip ${active ? 'active' : ''}" data-level="${escapeHtml(l)}">${escapeHtml(l)}</button>`;
+    }).join('');
+    el.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+      const v = btn.dataset.level;
+      state.level = v === 'Tous les niveaux' ? null : v;
+      renderLevelChips();
+      loadResults();
+    }));
+  }
+
+  function renderDegreeChips() {
+    const el = document.getElementById('degreeChips');
+    if (!el || !window._degrees) return;
+    el.innerHTML = ['Tous', ...window._degrees].map(d => {
+      const active = (d === 'Tous' && !state.degree) || d === state.degree;
+      return `<button class="chip ${active ? 'active' : ''}" data-degree="${escapeHtml(d)}">${escapeHtml(d)}</button>`;
+    }).join('');
+    el.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+      const v = btn.dataset.degree;
+      state.degree = v === 'Tous' ? null : v;
+      renderDegreeChips();
+      loadResults();
+    }));
+  }
+
   let searchTimer;
   document.getElementById('searchInput').addEventListener('input', (e) => {
     state.q = e.target.value;
@@ -187,7 +232,7 @@
   async function loadResults() {
     const container = document.getElementById('resultsContainer');
     try {
-      const res = await api.searchTeachers({ subject: state.subject, governorate: state.governorate, area: state.area, q: state.q });
+      const res = await api.searchTeachers({ subject: state.subject, governorate: state.governorate, area: state.area, level: state.level, degree: state.degree, q: state.q });
       const teachers = res.teachers || [];
       if (teachers.length === 0) {
         container.innerHTML = `
@@ -215,6 +260,8 @@
           <div class="teacher-name">${escapeHtml(t.full_name)}</div>
           <div class="teacher-loc">📍 ${escapeHtml(location)}</div>
           <div class="teacher-subjects">${(t.subjects || []).map(s => escapeHtml(s.name)).join(' · ') || 'Aucune matière'}</div>
+          ${t.degree ? `<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">${escapeHtml(t.degree)}${t.experience ? ' · ' + escapeHtml(t.experience) : ''}</div>` : ''}
+          ${(t.levels && t.levels.length) ? `<div style="font-size:12px;color:var(--teal-dark);margin-bottom:4px;">${t.levels.slice(0,4).map(escapeHtml).join(', ')}${t.levels.length>4?'…':''}</div>` : ''}
           <div>${starsHtml(t.rating)} <span style="font-size:12px;color:var(--muted);">(${t.rating_count || 0})</span></div>
         </div>
         ${price ? `<div class="teacher-price"><div class="amount">${price} DT</div><div class="unit">${window.t('per_hour')}</div></div>` : ''}
