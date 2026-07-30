@@ -55,6 +55,9 @@ const api = {
   getSubjects: () => apiRequest('/subjects', { auth: false }),
   getGovernorates: () => apiRequest('/governorates', { auth: false }),
   getAreas: (gov) => apiRequest(`/areas?governorate=${encodeURIComponent(gov)}`, { auth: false }),
+  getDegrees: () => apiRequest('/degrees', { auth: false }),
+  getExperience: () => apiRequest('/experience', { auth: false }),
+  getLevels: () => apiRequest('/levels', { auth: false }),
 
   searchTeachers: (params) => {
     const qs = new URLSearchParams();
