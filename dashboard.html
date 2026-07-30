@@ -27,11 +27,10 @@
   .price-row input { width: 110px; text-align: right; }
 
   .code-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; margin-top: 28px; }
-  .cert-picker {
-    display: flex; align-items: center; gap: 10px; background: var(--card); border: 1.5px dashed var(--border);
-    border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; cursor: pointer;
-  }
-  .cert-picker.has-file { border-style: solid; border-color: var(--teal); }
+
+  .visible-note { background:#FFF8E7; border:1px solid #F0D48A; border-radius:12px; padding:12px 14px; font-size:13px; color:#7A5E12; line-height:1.5; margin-bottom:20px; }
+  .level-group { margin-bottom: 12px; }
+  .level-group-title { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -57,23 +56,35 @@
   let profileData = null;
   let subjectsCatalog = [];
   let governorates = [];
+  let degreesCatalog = [];
+  let experienceCatalog = [];
+  let levelsCatalog = []; // [{group, items:[...]}]
   let availableAreas = [];
   let selectedAreas = [];
   let selectedSubjects = []; // [{subject_id, name, price_per_hour}]
+  let selectedLevels = [];   // [level_name]
   let selectedGovernorate = null;
+  let selectedDegree = '';
+  let selectedExperience = '';
   let subscription = null;
-  let cvFile = null;
 
   async function init() {
     try {
-      const [subjRes, govRes, profileRes] = await Promise.all([
+      const [subjRes, govRes, profileRes, degRes, expRes, lvlRes] = await Promise.all([
         api.getSubjects(), api.getGovernorates(), api.getMyProfile(),
+        api.getDegrees(), api.getExperience(), api.getLevels(),
       ]);
       subjectsCatalog = subjRes.subjects;
       governorates = govRes.governorates;
+      degreesCatalog = degRes.degrees || [];
+      experienceCatalog = expRes.experience || [];
+      levelsCatalog = lvlRes.levels || [];
       profileData = profileRes.profile;
       selectedGovernorate = profileData.governorate;
       selectedAreas = profileData.areas || [];
+      selectedLevels = profileData.levels || [];
+      selectedDegree = profileData.degree || '';
+      selectedExperience = profileData.experience || '';
       selectedSubjects = (profileData.subjects || []).map(s => ({
         subject_id: s.subject_id, name: s.name, price_per_hour: String(s.price_per_hour),
       }));
@@ -96,7 +107,6 @@
 
   function render() {
     const days = subscription ? daysRemaining(subscription.ends_at) : null;
-    const user = auth.getUser();
 
     document.getElementById('dashContent').innerHTML = `
       <div class="identity-card">
@@ -113,10 +123,29 @@
         </div>
       ` : ''}
 
-      <div class="cert-picker ${cvFile || profileData.cv_url ? 'has-file' : ''}" id="cvPicker">
-        <span style="font-size:20px;">📎</span>
-        <span>${cvFile ? t('dash_cv_new') : profileData.cv_url ? t('dash_cv_existing') : t('dash_cv_add')}</span>
-        <input type="file" id="cvInput" accept="image/*,.pdf" style="display:none;" />
+      <div class="visible-note">
+        ℹ️ Ces informations (diplôme, expérience, niveaux, matières, zone) seront <strong>visibles par les parents</strong>. Veuillez les renseigner avec exactitude.
+      </div>
+
+      <div class="field">
+        <label>Niveau / Diplôme</label>
+        <select class="input" id="degreeSelect">
+          <option value="">— Choisissez —</option>
+          ${degreesCatalog.map(d => `<option value="${escapeHtml(d)}" ${d === selectedDegree ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Expérience</label>
+        <select class="input" id="experienceSelect">
+          <option value="">— Choisissez —</option>
+          ${experienceCatalog.map(e => `<option value="${escapeHtml(e)}" ${e === selectedExperience ? 'selected' : ''}>${escapeHtml(e)}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Niveaux enseignés</label>
+        <div id="levelsWrap"></div>
       </div>
 
       <div class="field">
@@ -167,7 +196,29 @@
     renderGovChips();
     renderSubjectChips();
     renderPriceRows();
+    renderLevels();
     wireEvents();
+  }
+
+  function renderLevels() {
+    const el = document.getElementById('levelsWrap');
+    el.innerHTML = levelsCatalog.map(group => `
+      <div class="level-group">
+        <div class="level-group-title">${escapeHtml(group.group)}</div>
+        <div class="chips">
+          ${group.items.map(lvl => `
+            <button type="button" class="chip ${selectedLevels.includes(lvl) ? 'active' : ''}" data-level="${escapeHtml(lvl)}">${escapeHtml(lvl)}</button>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+    el.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+      const lvl = btn.dataset.level;
+      selectedLevels = selectedLevels.includes(lvl)
+        ? selectedLevels.filter(x => x !== lvl)
+        : [...selectedLevels, lvl];
+      renderLevels();
+    }));
   }
 
   function renderGovChips() {
@@ -234,11 +285,8 @@
   }
 
   function wireEvents() {
-    document.getElementById('cvPicker').addEventListener('click', () => document.getElementById('cvInput').click());
-    document.getElementById('cvInput').addEventListener('change', (e) => {
-      cvFile = e.target.files[0] || null;
-      render();
-    });
+    document.getElementById('degreeSelect').addEventListener('change', (e) => { selectedDegree = e.target.value; });
+    document.getElementById('experienceSelect').addEventListener('change', (e) => { selectedExperience = e.target.value; });
     document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
     document.getElementById('activateBtn').addEventListener('click', activateCode);
     document.getElementById('logoutLink').addEventListener('click', (e) => {
@@ -247,8 +295,12 @@
   }
 
   async function saveProfile() {
-    if (!selectedGovernorate || selectedSubjects.length === 0 || selectedSubjects.some(s => !s.price_per_hour)) {
-      showToast('Choisissez un gouvernorat, au moins une matière, et un prix pour chaque matière.');
+    if (!selectedDegree) { showToast('Choisissez votre niveau / diplôme.'); return; }
+    if (!selectedExperience) { showToast('Choisissez votre expérience.'); return; }
+    if (selectedLevels.length === 0) { showToast('Cochez au moins un niveau enseigné.'); return; }
+    if (!selectedGovernorate) { showToast('Choisissez un gouvernorat.'); return; }
+    if (selectedSubjects.length === 0 || selectedSubjects.some(s => !s.price_per_hour)) {
+      showToast('Choisissez au moins une matière et un prix pour chacune.');
       return;
     }
     const btn = document.getElementById('saveProfileBtn');
@@ -257,24 +309,12 @@
       await api.updateMyProfile({
         bio: document.getElementById('bioInput').value,
         governorate: selectedGovernorate,
+        degree: selectedDegree,
+        experience: selectedExperience,
+        levels: selectedLevels,
         subjects: selectedSubjects.map(s => ({ subject_id: s.subject_id, price_per_hour: parseFloat(s.price_per_hour) })),
         areas: selectedAreas,
       });
-
-      if (cvFile) {
-        const formData = new FormData();
-        formData.append('cv', cvFile);
-        const res = await fetch(`${API_BASE_URL}/teachers/me/cv`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${auth.getToken()}` },
-          body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erreur upload CV');
-        profileData.cv_url = data.cv_url;
-        cvFile = null;
-      }
-
       showToast('Profil enregistré !');
       btn.disabled = false; btn.textContent = t('dash_saved');
     } catch (err) {
