@@ -111,6 +111,7 @@
         <div>
           <h1 class="display">${escapeHtml(t.full_name)}</h1>
           <div class="profile-loc">📍 ${escapeHtml(location)}</div>
+          ${t.degree ? `<div style="font-size:13px;color:var(--muted);margin-bottom:4px;">${escapeHtml(t.degree)}${t.experience ? ' · ' + escapeHtml(t.experience) + ' d\'expérience' : ''}</div>` : ''}
           <div>${starsHtml(t.rating, 16)} <span style="font-size:13px;color:var(--muted);">${Number(t.rating||0).toFixed(1)} (${t.rating_count||0} avis)</span></div>
         </div>
       </div>
@@ -124,6 +125,13 @@
           <span class="price">${s.price_per_hour} DT/h</span>
         </div>
       `).join('')}
+
+      ${(t.levels && t.levels.length) ? `
+        <div class="section-title">Niveaux enseignés</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${t.levels.map(l => `<span style="background:var(--card);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:13px;">${escapeHtml(l)}</span>`).join('')}
+        </div>
+      ` : ''}
 
       <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);">
         📞 ${window.t('profile_call')} ${escapeHtml(t.phone)}
