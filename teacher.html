@@ -133,16 +133,31 @@
         </div>
       ` : ''}
 
-      <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);">
-        📞 ${window.t('profile_call')} ${escapeHtml(t.phone)}
-      </a>
+      <!-- Contact gate: parent must acknowledge the safety notice each time to reveal contacts -->
+      <button type="button" id="revealContactBtn" class="action-btn" style="background:var(--teal);width:100%;border:none;cursor:pointer;">
+        📞 Voir les coordonnées
+      </button>
 
-      <a href="https://wa.me/${t.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Bonjour, je vous contacte via Mou3allim.')}" target="_blank" class="action-btn" style="background:#25D366;">
-        💬 WhatsApp
-      </a>
+      <div id="contactGate" style="display:none;margin-top:12px;">
+        <div style="background:#FFF8E7;border:1px solid #F0D48A;border-radius:12px;padding:12px 14px;font-size:13px;color:#7A5E12;line-height:1.5;">
+          ⚠️ <strong>Sécurité :</strong> Mou3allim est une plateforme de mise en relation et ne vérifie pas l'identité des professeurs. Il vous appartient de vérifier l'identité, les diplômes et les références de tout professeur avant tout cours — en particulier pour les cours à domicile ou impliquant des mineurs.
+        </div>
+        <label style="display:flex;gap:9px;align-items:flex-start;margin-top:12px;font-size:13.5px;color:var(--ink);cursor:pointer;">
+          <input type="checkbox" id="safetyAgree" style="margin-top:3px;flex-shrink:0;width:18px;height:18px;" />
+          <span>J'ai lu et je comprends ce message de sécurité, et je m'engage à vérifier l'identité du professeur avant tout cours.</span>
+        </label>
+        <button type="button" id="confirmContactBtn" class="action-btn" style="background:var(--muted,#9a9a9a);width:100%;border:none;cursor:not-allowed;margin-top:12px;opacity:0.6;" disabled>
+          Afficher le numéro
+        </button>
+      </div>
 
-      <div style="background:#FFF8E7;border:1px solid #F0D48A;border-radius:12px;padding:12px 14px;margin-top:14px;font-size:13px;color:#7A5E12;line-height:1.5;">
-        ⚠️ <strong>Sécurité :</strong> Mou3allim est une plateforme de mise en relation et ne vérifie pas l'identité des professeurs. Il vous appartient de vérifier l'identité, les diplômes et les références de tout professeur avant tout cours — en particulier pour les cours à domicile ou impliquant des mineurs.
+      <div id="contactRevealed" style="display:none;margin-top:6px;">
+        <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);">
+          📞 ${window.t('profile_call')} ${escapeHtml(t.phone)}
+        </a>
+        <a href="https://wa.me/${t.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Bonjour, je vous contacte via Mou3allim.')}" target="_blank" class="action-btn" style="background:#25D366;">
+          💬 WhatsApp
+        </a>
       </div>
 
       ${t.cv_url ? `
@@ -178,6 +193,37 @@
         `).join('')}
       ` : `<p class="text-muted" style="font-size:14px;">${window.t('profile_no_reviews')}</p>`}
     `;
+
+    // --- Contact reveal gate ---
+    const revealBtn = document.getElementById('revealContactBtn');
+    const gate = document.getElementById('contactGate');
+    const agree = document.getElementById('safetyAgree');
+    const confirmBtn = document.getElementById('confirmContactBtn');
+    const revealed = document.getElementById('contactRevealed');
+    if (revealBtn) {
+      revealBtn.addEventListener('click', () => {
+        gate.style.display = 'block';
+        revealBtn.style.display = 'none';
+      });
+      agree.addEventListener('change', () => {
+        if (agree.checked) {
+          confirmBtn.disabled = false;
+          confirmBtn.style.cursor = 'pointer';
+          confirmBtn.style.opacity = '1';
+          confirmBtn.style.background = 'var(--teal)';
+        } else {
+          confirmBtn.disabled = true;
+          confirmBtn.style.cursor = 'not-allowed';
+          confirmBtn.style.opacity = '0.6';
+          confirmBtn.style.background = 'var(--muted,#9a9a9a)';
+        }
+      });
+      confirmBtn.addEventListener('click', () => {
+        if (!agree.checked) return;
+        gate.style.display = 'none';
+        revealed.style.display = 'block';
+      });
+    }
 
     document.querySelectorAll('#rateStars svg').forEach(star => {
       star.addEventListener('click', () => {
