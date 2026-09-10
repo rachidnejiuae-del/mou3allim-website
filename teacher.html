@@ -152,10 +152,10 @@
       </div>
 
       <div id="contactRevealed" style="display:none;margin-top:6px;">
-        <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);">
+        <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);" onclick="if(window.api&&api.track)api.track('call_click');">
           📞 ${window.t('profile_call')} ${escapeHtml(t.phone)}
         </a>
-        <a href="https://wa.me/${t.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Bonjour, je vous contacte via Mou3allim.')}" target="_blank" class="action-btn" style="background:#25D366;">
+        <a href="https://wa.me/${t.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Bonjour, je vous contacte via Mou3allim.')}" target="_blank" class="action-btn" style="background:#25D366;" onclick="if(window.api&&api.track)api.track('whatsapp_click');">
           💬 WhatsApp
         </a>
       </div>
@@ -280,6 +280,7 @@
   });
 
   loadProfile();
+  if (window.api && api.track) api.track('profile_view');
 </script>
 </body>
 </html>
