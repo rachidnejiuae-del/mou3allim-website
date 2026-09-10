@@ -274,7 +274,7 @@
 
   loadLookups();
   loadResults();
-  if (window.api && api.track) api.track('search_view');
+  if (typeof api !== 'undefined' && api.track) api.track('search_view');
 </script>
 </body>
 </html>
