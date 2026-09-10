@@ -65,6 +65,7 @@ const api = {
     return apiRequest(`/teachers/search?${qs.toString()}`, { auth: false });
   },
   getTeacher: (id) => apiRequest(`/teachers/${id}`, { auth: false }),
+  track: (event) => { try { fetch(`${API_BASE_URL}/track`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ event }) }).catch(()=>{}); } catch(e){} },
   getRatings: (id) => apiRequest(`/teachers/${id}/ratings`, { auth: false }),
   rateTeacher: (id, payload) => apiRequest(`/teachers/${id}/ratings`, { method: 'POST', body: payload, auth: true }),
 
