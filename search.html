@@ -242,7 +242,10 @@
           </div>`;
         return;
       }
-      container.innerHTML = `<div class="results-grid">${teachers.map(renderTeacherCard).join('')}</div>`;
+      const countLabel = teachers.length === 1 ? '1 professeur trouvé' : `${teachers.length} professeurs trouvés`;
+      container.innerHTML = `
+        <div style="font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:16px;">${countLabel}</div>
+        <div class="results-grid">${teachers.map(renderTeacherCard).join('')}</div>`;
     } catch (err) {
       container.innerHTML = `<div class="empty-state"><p>${escapeHtml(err.message)}</p></div>`;
     }
