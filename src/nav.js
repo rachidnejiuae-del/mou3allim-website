@@ -18,6 +18,17 @@ function renderNav(active) {
   }
 
   root.innerHTML = `
+    <style>
+      .nav-jeux{
+        display:inline-flex;align-items:center;gap:6px;
+        background:linear-gradient(135deg,#F2A63B,#E8912A);color:#fff;
+        padding:9px 16px;border-radius:999px;font-weight:700;font-size:14px;
+        text-decoration:none;box-shadow:0 4px 12px rgba(232,163,61,.35);
+        transition:transform .12s, box-shadow .12s;white-space:nowrap;
+      }
+      .nav-jeux:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(232,163,61,.45);}
+      .nav-jeux:active{transform:translateY(0);}
+    </style>
     <nav class="nav">
       <div class="nav-inner">
         <a href="index.html" class="logo">
@@ -26,7 +37,7 @@ function renderNav(active) {
         </a>
         <div class="nav-links">
           <a href="search.html" class="nav-link nav-link-desktop" data-i18n="nav_find_teacher">${t('nav_find_teacher')}</a>
-          <a href="jeux.html" class="nav-link nav-link-desktop">🎮 Jeux</a>
+          <a href="jeux.html" class="nav-jeux">🎮 Jeux gratuits</a>
           ${rightSide}
         </div>
       </div>
