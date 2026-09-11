@@ -229,10 +229,16 @@
     searchTimer = setTimeout(loadResults, 350);
   });
 
+  let currentOffset = 0;
+  let loadedCount = 0;
+
+  // Fresh search (filters changed): reset and load page 1.
   async function loadResults() {
+    currentOffset = 0;
+    loadedCount = 0;
     const container = document.getElementById('resultsContainer');
     try {
-      const res = await api.searchTeachers({ subject: state.subject, governorate: state.governorate, area: state.area, level: state.level, degree: state.degree, q: state.q });
+      const res = await api.searchTeachers({ subject: state.subject, governorate: state.governorate, area: state.area, level: state.level, degree: state.degree, q: state.q, offset: 0 });
       const teachers = res.teachers || [];
       if (teachers.length === 0) {
         container.innerHTML = `
@@ -242,12 +248,48 @@
           </div>`;
         return;
       }
-      const countLabel = teachers.length === 1 ? '1 professeur trouvé' : `${teachers.length} professeurs trouvés`;
+      loadedCount = teachers.length;
       container.innerHTML = `
-        <div style="font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:16px;">${countLabel}</div>
-        <div class="results-grid">${teachers.map(renderTeacherCard).join('')}</div>`;
+        <div id="resultCount" style="font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:16px;"></div>
+        <div class="results-grid" id="resultsGrid">${teachers.map(renderTeacherCard).join('')}</div>
+        <div id="loadMoreWrap" style="text-align:center;margin-top:24px;"></div>`;
+      updateCountLabel(res.hasMore);
+      renderLoadMore(res.hasMore, res.pageSize || teachers.length);
     } catch (err) {
       container.innerHTML = `<div class="empty-state"><p>${escapeHtml(err.message)}</p></div>`;
+    }
+  }
+
+  function updateCountLabel(hasMore) {
+    const el = document.getElementById('resultCount');
+    if (!el) return;
+    const plural = loadedCount === 1 ? 'professeur affiché' : 'professeurs affichés';
+    el.textContent = hasMore ? `${loadedCount} ${plural} — voir plus ci-dessous` : `${loadedCount} ${loadedCount === 1 ? 'professeur trouvé' : 'professeurs trouvés'}`;
+  }
+
+  function renderLoadMore(hasMore, pageSize) {
+    const wrap = document.getElementById('loadMoreWrap');
+    if (!wrap) return;
+    if (!hasMore) { wrap.innerHTML = ''; return; }
+    wrap.innerHTML = `<button id="loadMoreBtn" class="btn btn-primary" style="padding:12px 28px;">Voir plus de professeurs</button>`;
+    document.getElementById('loadMoreBtn').addEventListener('click', () => loadMore(pageSize));
+  }
+
+  // Load the next page and APPEND (does not reset).
+  async function loadMore(pageSize) {
+    const btn = document.getElementById('loadMoreBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Chargement...'; }
+    currentOffset += pageSize;
+    try {
+      const res = await api.searchTeachers({ subject: state.subject, governorate: state.governorate, area: state.area, level: state.level, degree: state.degree, q: state.q, offset: currentOffset });
+      const teachers = res.teachers || [];
+      const grid = document.getElementById('resultsGrid');
+      grid.insertAdjacentHTML('beforeend', teachers.map(renderTeacherCard).join(''));
+      loadedCount += teachers.length;
+      updateCountLabel(res.hasMore);
+      renderLoadMore(res.hasMore, res.pageSize || pageSize);
+    } catch (err) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Voir plus de professeurs'; }
     }
   }
 
