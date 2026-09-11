@@ -26,6 +26,7 @@ function renderNav(active) {
         </a>
         <div class="nav-links">
           <a href="search.html" class="nav-link nav-link-desktop" data-i18n="nav_find_teacher">${t('nav_find_teacher')}</a>
+          <a href="jeux.html" class="nav-link nav-link-desktop">🎮 Jeux</a>
           ${rightSide}
         </div>
       </div>
