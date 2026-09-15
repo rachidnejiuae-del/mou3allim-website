@@ -108,7 +108,26 @@
   function render() {
     const days = subscription ? daysRemaining(subscription.ends_at) : null;
 
+    // Smart subscription banner: hidden only if the teacher has a REAL paid
+    // subscription (prepaid code) that is still active. Shown for trials,
+    // expired, or no subscription — inviting them to subscribe via WhatsApp.
+    const ref = subscription ? (subscription.payment_reference || '') : '';
+    const isRealPaid = subscription && days > 0 && ref.indexOf('prepaid:') === 0;
+    const subMsg = encodeURIComponent("مرحبا 👋 نحب نفعّل اشتراكي في Mou3allim (15 دينار في الشهر) باش نبقى ظاهر للأولياء. شنوّة الخطوات ؟");
+    const subBanner = isRealPaid ? '' : `
+      <a href="https://wa.me/21628357354?text=${subMsg}" target="_blank" style="text-decoration:none;display:block;margin-bottom:16px;">
+        <div style="background:linear-gradient(135deg,#F2A63B,#E8912A);border-radius:16px;padding:16px 18px;box-shadow:0 8px 22px rgba(232,163,61,.32);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="font-size:34px;line-height:1;">⭐</div>
+          <div style="flex:1;min-width:180px;">
+            <div style="color:#fff;font-size:16px;font-weight:800;margin-bottom:2px;">Activez votre abonnement</div>
+            <div style="color:#FFF3E0;font-size:13px;line-height:1.4;">Restez visible par les parents. 15 DT/mois. Cliquez pour nous contacter sur WhatsApp.</div>
+          </div>
+          <div style="background:#fff;color:#C9861F;font-weight:800;padding:9px 16px;border-radius:999px;font-size:13px;white-space:nowrap;">💬 Je m'abonne</div>
+        </div>
+      </a>`;
+
     document.getElementById('dashContent').innerHTML = `
+      ${subBanner}
       <div class="identity-card">
         <img src="${getAvatar(profileData)}" alt="" onerror="this.src='${MALE_AVATAR}'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" />
         <div>
@@ -181,7 +200,10 @@
           <input class="input" id="codeInput" placeholder="MOU3-XXXX-XXXX" style="text-align:center;font-weight:700;letter-spacing:1px;text-transform:uppercase;" />
         </div>
         <button class="btn btn-amber btn-block" id="activateBtn">${t('dash_activate')}</button>
-        <a href="payment.html" style="display:block; text-align:center; margin-top:14px; font-size:13px; font-weight:600; color:var(--teal-dark);">
+        <a href="https://wa.me/21628357354?text=${subMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;text-decoration:none;padding:13px;border-radius:999px;font-weight:700;font-size:14px;margin-top:12px;">
+          💬 Demander mon abonnement
+        </a>
+        <a href="payment.html" style="display:block; text-align:center; margin-top:12px; font-size:13px; font-weight:600; color:var(--teal-dark);">
           ${t('dash_no_code_link')}
         </a>
       </div>
