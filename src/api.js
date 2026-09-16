@@ -70,6 +70,17 @@ const api = {
   rateTeacher: (id, payload) => apiRequest(`/teachers/${id}/ratings`, { method: 'POST', body: payload, auth: true }),
 
   getMyProfile: () => apiRequest('/teachers/me', { auth: true }),
+  uploadPhoto: (file) => {
+    const fd = new FormData();
+    fd.append('photo', file);
+    const token = localStorage.getItem('mou3allim_token');
+    return fetch(`${API_BASE_URL}/teachers/me/photo`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: fd,
+    }).then(async (r) => { const d = await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||'Erreur upload'); return d; });
+  },
+  removePhoto: () => apiRequest('/teachers/me/photo', { method: 'DELETE', auth: true }),
   updateMyProfile: (payload) => apiRequest('/teachers/me', { method: 'PUT', body: payload, auth: true }),
   getMySubscription: () => apiRequest('/subscriptions/me', { auth: true }),
   redeemCode: (code) => apiRequest('/subscriptions/redeem', { method: 'POST', body: { code }, auth: true }),
