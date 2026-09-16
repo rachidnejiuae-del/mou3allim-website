@@ -129,11 +129,21 @@
     document.getElementById('dashContent').innerHTML = `
       ${subBanner}
       <div class="identity-card">
-        <img src="${getAvatar(profileData)}" alt="" onerror="this.src='${MALE_AVATAR}'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" />
-        <div>
+        <img id="dashPhoto" src="${getAvatar(profileData)}" alt="" onerror="this.src='${MALE_AVATAR}'" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" />
+        <div style="flex:1;">
           <div class="name">${escapeHtml(profileData.full_name)}</div>
           <div class="phone">${escapeHtml(profileData.phone)}</div>
+          <div style="margin-top:6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <label style="color:var(--teal-dark);font-weight:700;font-size:13px;cursor:pointer;">
+              📷 Changer ma photo
+              <input type="file" id="photoInput" accept="image/*" style="display:none;" />
+            </label>
+            ${profileData.photo_url ? `<a href="#" id="revertPhoto" style="color:var(--muted);font-size:12px;">Avatar par défaut</a>` : ''}
+          </div>
         </div>
+      </div>
+      <div class="visible-note" style="background:#EAF4FF;border-color:#B8D8F5;color:#1E5A96;">
+        📷 Utilisez une photo claire et professionnelle de <strong>vous-même</strong>. Pas de photos d'enfants ni de contenu inapproprié — elles seront supprimées.
       </div>
 
       ${days !== null ? `
@@ -307,6 +317,10 @@
   }
 
   function wireEvents() {
+    const photoInput = document.getElementById('photoInput');
+    if (photoInput) photoInput.addEventListener('change', handlePhotoUpload);
+    const revert = document.getElementById('revertPhoto');
+    if (revert) revert.addEventListener('click', handlePhotoRevert);
     document.getElementById('degreeSelect').addEventListener('change', (e) => { selectedDegree = e.target.value; });
     document.getElementById('experienceSelect').addEventListener('change', (e) => { selectedExperience = e.target.value; });
     document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
@@ -314,6 +328,33 @@
     document.getElementById('logoutLink').addEventListener('click', (e) => {
       e.preventDefault(); auth.clear(); window.location.href = 'index.html';
     });
+  }
+
+  async function handlePhotoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('Photo trop lourde (max 5 Mo).'); return; }
+    showToast('Envoi de la photo...');
+    try {
+      const res = await api.uploadPhoto(file);
+      profileData.photo_url = res.photo_url;
+      showToast('Photo mise à jour !');
+      render();
+    } catch (err) {
+      showToast(err.message || "Erreur lors de l'envoi.");
+    }
+  }
+
+  async function handlePhotoRevert(e) {
+    e.preventDefault();
+    try {
+      await api.removePhoto();
+      profileData.photo_url = null;
+      showToast('Avatar par défaut rétabli.');
+      render();
+    } catch (err) {
+      showToast(err.message);
+    }
   }
 
   async function saveProfile() {
