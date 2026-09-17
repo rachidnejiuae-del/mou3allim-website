@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Mou3allim — رياضيات للإعدادي</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap');
+  :root{
+    --teal:#0E7C66;--teal-d:#0A5D4C;--teal-l:#E3F3EB;
+    --amber:#F2A63B;--amber-d:#D07E12;
+    --purple:#8B6DD6;--blue:#3F8FD6;
+    --ink:#1E2E29;--muted:#728A82;--card:#FFFFFF;--line:#EAE5DA;
+    --good:#1FA872;--bad:#EC5A44;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{font-family:'Baloo 2',system-ui,sans-serif;color:var(--ink);background:#EAF0F6;min-height:100%;overflow-x:hidden;position:relative;}
+  .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+  .blob{position:absolute;border-radius:50%;filter:blur(38px);opacity:.5;animation:float 14s ease-in-out infinite;}
+  .blob.b1{width:280px;height:280px;background:#BcD8F2;top:-60px;left:-70px;}
+  .blob.b2{width:240px;height:240px;background:#BFE8D6;bottom:-50px;right:-60px;animation-delay:-4s;}
+  .blob.b3{width:200px;height:200px;background:#FBE2B8;top:40%;left:-70px;animation-delay:-8s;}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-24px) scale(1.08);}}
+  .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:16px 16px 40px;min-height:100vh;display:flex;flex-direction:column;}
+  .brand{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px;font-weight:800;font-size:19px;color:var(--teal-d);}
+  .brand .m{width:32px;height:32px;border-radius:10px;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:17px;box-shadow:0 4px 10px rgba(14,124,102,.3);}
+  #muteBtn{position:absolute;left:0;background:var(--card);border:1px solid var(--line);border-radius:12px;width:42px;height:42px;font-size:19px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.05);}
+  #muteBtn:active{transform:scale(.92);}
+  .card{background:var(--card);border-radius:26px;box-shadow:0 14px 40px rgba(30,50,80,.12),0 2px 6px rgba(30,50,80,.05);}
+  .home{padding:26px 22px;text-align:center;}
+  .mascot{font-size:60px;line-height:1;margin-bottom:6px;animation:bounce 2s ease-in-out infinite;display:inline-block;}
+  @keyframes bounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
+  .home h1{font-size:30px;font-weight:800;line-height:1.05;margin-bottom:4px;}
+  .home h1 .em{color:var(--blue);}
+  .home p{color:var(--muted);font-size:15px;margin-bottom:22px;font-weight:500;}
+  .themes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .theme{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;
+    background:#fff;border:2.5px solid var(--line);border-radius:20px;padding:18px 10px;transition:.15s;font-family:inherit;}
+  .theme:active{transform:scale(.96);}
+  .theme:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(30,50,80,.12);border-color:var(--blue);}
+  .theme .ico{font-size:34px;line-height:1;}
+  .theme .t{font-weight:800;font-size:15px;}
+  .theme .c{font-size:11px;color:var(--muted);font-weight:500;}
+  .theme.all{grid-column:span 2;flex-direction:row;justify-content:center;gap:10px;background:var(--amber);border-color:var(--amber);color:#fff;}
+  .theme.all .t,.theme.all .c{color:#fff;}
+  .play{padding:20px;display:none;}
+  .hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .hud .pill{background:var(--teal-l);border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:5px;}
+  .hud .pill.streak{background:#FDECD0;color:var(--amber-d);}
+  .progbar{height:10px;background:#EEF2F0;border-radius:999px;overflow:hidden;margin:10px 0 16px;}
+  .progfill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--amber));border-radius:999px;transition:width .35s;}
+  .prompt{background:linear-gradient(135deg,#F5F9FD,#EEF4FB);border-radius:20px;padding:24px 14px;text-align:center;border:2px solid #E1ECF7;margin-bottom:16px;}
+  .prompt .qtxt{font-size:30px;font-weight:800;color:var(--ink);direction:ltr;}
+  .prompt .ask{font-size:13px;color:var(--muted);font-weight:600;margin-top:8px;}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .choice{border:2.5px solid var(--line);border-radius:18px;background:#fff;padding:16px;font-family:inherit;
+    font-weight:800;font-size:22px;cursor:pointer;transition:.12s;color:var(--ink);box-shadow:0 4px 0 var(--line);direction:ltr;}
+  .choice:active{transform:translateY(4px);box-shadow:0 0 0 var(--line);}
+  .choice:hover:not(.locked){border-color:var(--blue);}
+  .choice.correct{background:#E4F7EE;border-color:var(--good);color:var(--good);box-shadow:0 4px 0 #B7E6CF;}
+  .choice.wrong{background:#FDEBE7;border-color:var(--bad);color:var(--bad);box-shadow:0 4px 0 #F5C9C0;animation:shake .35s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+  .feedback{text-align:center;min-height:26px;font-weight:700;font-size:16px;margin-top:14px;}
+  .feedback.good{color:var(--good);} .feedback.bad{color:var(--bad);}
+  .result{padding:28px 22px;text-align:center;display:none;}
+  .result .big{font-size:70px;margin-bottom:4px;animation:pop .5s;}
+  @keyframes pop{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
+  .result h2{font-size:28px;margin-bottom:2px;}
+  .result .score{font-size:15px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  .stars{font-size:38px;letter-spacing:8px;margin:8px 0 18px;color:var(--amber);}
+  .result .msg{background:#EAF0F6;color:var(--blue);border-radius:16px;padding:13px;font-size:14.5px;font-weight:600;margin-bottom:18px;}
+  .btnrow{display:flex;gap:11px;}
+  .btn{flex:1;border:none;border-radius:18px;padding:16px;font-family:inherit;font-weight:800;font-size:16px;cursor:pointer;transition:.1s;}
+  .btn-primary{background:var(--teal);color:#fff;box-shadow:0 5px 0 var(--teal-d);}
+  .btn-primary:active{transform:translateY(4px);box-shadow:0 1px 0 var(--teal-d);}
+  .btn-ghost{background:#EEF2F0;color:var(--ink);box-shadow:0 5px 0 #DBE3DF;}
+  .btn-ghost:active{transform:translateY(4px);box-shadow:0 1px 0 #DBE3DF;}
+  .back{background:none;border:none;color:var(--muted);font-family:inherit;font-size:22px;cursor:pointer;padding:4px 8px;font-weight:700;}
+  .foot{text-align:center;margin-top:auto;padding-top:22px;color:var(--muted);font-size:12.5px;font-weight:500;}
+  .foot a{color:var(--teal-d);font-weight:700;text-decoration:none;}
+  .burst{position:fixed;pointer-events:none;font-size:24px;animation:fly 1s ease-out forwards;z-index:60;}
+  @keyframes fly{0%{opacity:1;transform:translateY(0) scale(.6) rotate(0);}100%{opacity:0;transform:translateY(-110px) scale(1.5) rotate(30deg);}}
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="wrap">
+  <div class="brand"><span class="m">M</span> رياضيات للإعدادي
+    <button id="muteBtn" title="الصوت">🔊</button>
+  </div>
+
+  <div class="card home" id="home">
+    <div class="mascot">🦊</div>
+    <h1>تحدّي <span class="em">الرياضيات</span></h1>
+    <p>اختر موضوعاً وتدرّب — أسئلة جديدة في كل مرّة !</p>
+    <div class="themes" id="themes"></div>
+    <div class="foot">
+      لعبة مجانية من <a href="https://mou3allim.com" target="_blank">mou3allim.com</a><br>
+      تبحث عن أستاذ رياضيات ؟ ستجده في الموقع 💚
+    </div>
+  </div>
+
+  <div class="card play" id="play">
+    <div class="hud">
+      <button class="back" id="playBack">›</button>
+      <div class="pill">⭐ <span id="scoreVal">0</span></div>
+      <div class="pill streak">🔥 <span id="streakVal">0</span></div>
+    </div>
+    <div class="progbar"><div class="progfill" id="progfill"></div></div>
+    <div class="prompt">
+      <div class="qtxt" id="qtxt">3 + 4</div>
+      <div class="ask" id="ask">اختر الجواب الصحيح</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="big" id="resEmoji">🏆</div>
+    <h2 id="resTitle">أحسنت !</h2>
+    <div class="score" id="resScore"></div>
+    <div class="stars" id="resStars"></div>
+    <div class="msg" id="resMsg"></div>
+    <div class="btnrow">
+      <button class="btn btn-ghost" id="resHome">القائمة</button>
+      <button class="btn btn-primary" id="resAgain">إعادة 🔄</button>
+    </div>
+    <div class="foot" style="margin-top:20px;">
+      تريد التقدّم في الرياضيات ؟<br>
+      <a href="https://mou3allim.com" target="_blank">جد أستاذاً على mou3allim.com →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- sound ----------
+  let muted=false, actx=null, audioReady=false;
+  function ac(){ if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}} if(actx&&actx.state==='suspended'){actx.resume();} return actx; }
+  function tone(freq,start,dur,type,vol){ const a=ac(); if(!a||muted||!audioReady)return;
+    try{const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.value=freq;o.connect(g);g.connect(a.destination);
+    const t=a.currentTime+start;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.15,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.start(t);o.stop(t+dur+0.05);}catch(e){} }
+  const sfx={tap(){tone(320,0,0.05,'triangle',0.05);},
+    correct(){tone(660,0,0.12,'sine',0.16);tone(880,0.09,0.14,'sine',0.16);},
+    streak(){[523,659,784,1046].forEach((f,i)=>tone(f,i*0.08,0.16,'sine',0.16));},
+    wrong(){tone(200,0,0.18,'sine',0.12);tone(150,0.12,0.2,'sine',0.10);},
+    win(){[523,659,784,1046,1318].forEach((f,i)=>tone(f,i*0.11,0.22,'triangle',0.16));},
+    lose(){tone(392,0,0.2,'sine',0.12);tone(330,0.15,0.25,'sine',0.10);}};
+  function unlockAudio(){ const a=ac(); if(!a)return; if(a.state==='suspended')a.resume();
+    try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);}catch(e){}
+    audioReady=true; }
+  document.addEventListener('touchend',unlockAudio,false); document.addEventListener('click',unlockAudio,false);
+  const muteBtn=document.getElementById('muteBtn');
+  muteBtn.addEventListener('click',(e)=>{e.stopPropagation();muted=!muted;muteBtn.textContent=muted?'🔇':'🔊';unlockAudio();});
+
+  // ---------- helpers ----------
+  function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;}
+  function lcm(a,b){return Math.abs(a*b)/gcd(a,b);}
+  function rint(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  // build 4 unique numeric options around the answer
+  function numOptions(answer, spread){
+    const set=new Set([String(answer)]);
+    let guard=0;
+    while(set.size<4 && guard<40){
+      guard++;
+      let d=rint(-spread,spread); if(d===0)d=1;
+      const v=answer+d;
+      set.add(String(v));
+    }
+    return shuffle([...set]);
+  }
+  // options for fraction answers (strings)
+  function strOptions(answer, others){
+    const set=new Set([answer]);
+    shuffle(others).forEach(o=>{ if(set.size<4) set.add(o); });
+    let guard=0;
+    while(set.size<4 && guard<20){guard++; set.add(answer+' '+set.size);}
+    return shuffle([...set]);
+  }
+
+  // ---------- question generators ----------
+  // Each returns {q, ans (string), options:[strings], ask}
+  const GENERATORS={
+    // Simplify a fraction
+    fractions:function(){
+      const type=Math.random();
+      if(type<0.5){
+        // simplify
+        const k=rint(2,6); let a=rint(1,8), b=rint(2,9);
+        while(gcd(a,b)!==1){ b=rint(2,9); if(gcd(a,b)===1)break; }
+        const num=a*k, den=b*k;
+        const ans=a+'/'+b;
+        const distract=[(a+1)+'/'+b, a+'/'+(b+1), (num)+'/'+(den), (a*2)+'/'+(b*2)].filter(x=>x!==ans);
+        return {q:num+'/'+den+' = ?', ask:'بسّط الكسر', ans, options:strOptions(ans,distract)};
+      } else {
+        // add fractions with same denominator
+        const d=rint(3,9); const a=rint(1,d-1), b=rint(1,d-1);
+        const sum=a+b; const g=gcd(sum,d);
+        const ans=(sum/g)+'/'+(d/g);
+        const distract=[(sum)+'/'+d, (a+b)+'/'+(d+d), (sum/g+1)+'/'+(d/g), (a*b)+'/'+d].filter(x=>x!==ans);
+        return {q:a+'/'+d+' + '+b+'/'+d+' = ?', ask:'اجمع الكسرين وبسّط', ans, options:strOptions(ans,distract)};
+      }
+    },
+    // PGCD
+    pgcd:function(){
+      const g=rint(2,9); const a=g*rint(2,8), b=g*rint(2,8);
+      const ans=gcd(a,b);
+      return {q:'PGCD('+a+' , '+b+')', ask:'أوجد القاسم المشترك الأكبر', ans:String(ans), options:numOptions(ans, Math.max(3,g))};
+    },
+    // PPCM
+    ppcm:function(){
+      const a=rint(2,12), b=rint(2,12);
+      const ans=lcm(a,b);
+      return {q:'PPCM('+a+' , '+b+')', ask:'أوجد المضاعف المشترك الأصغر', ans:String(ans), options:numOptions(ans, Math.max(4,Math.round(ans*0.3)))};
+    },
+    // Factorisation: common factor  ka + kb = k(a+b)
+    factorisation:function(){
+      const k=rint(2,7), a=rint(2,9), b=rint(2,9);
+      const t1=k*a, t2=k*b;
+      const ans=k+'('+a+' + '+b+')';
+      const distract=[a+'('+k+' + '+b+')', k+'('+a+' × '+b+')', (k+1)+'('+a+' + '+b+')', k+'('+(a+1)+' + '+b+')'].filter(x=>x!==ans);
+      return {q:t1+' + '+t2, ask:'حلّل إلى جداء (عامل مشترك)', ans, options:strOptions(ans,distract)};
+    },
+    // Priorités opératoires
+    priorites:function(){
+      const a=rint(2,9), b=rint(2,9), c=rint(2,9);
+      const forms=[
+        {q:a+' + '+b+' × '+c, val:a+b*c},
+        {q:a+' × '+b+' + '+c, val:a*b+c},
+        {q:a+' × ('+b+' + '+c+')', val:a*(b+c)},
+        {q:a+' + '+b+' - '+c, val:a+b-c},
+      ];
+      const pick=forms[rint(0,forms.length-1)];
+      return {q:pick.q, ask:'احسب باحترام الأولويات', ans:String(pick.val), options:numOptions(pick.val,6)};
+    },
+    // Nombres relatifs
+    relatifs:function(){
+      const a=rint(-12,12), b=rint(-12,12);
+      const ops=[
+        {q:'('+a+') + ('+b+')', val:a+b},
+        {q:'('+a+') - ('+b+')', val:a-b},
+        {q:'('+a+') × ('+b+')', val:a*b},
+      ];
+      const pick=ops[rint(0,ops.length-1)];
+      return {q:pick.q, ask:'احسب مع الأعداد النسبية', ans:String(pick.val), options:numOptions(pick.val, Math.max(5,Math.round(Math.abs(pick.val)*0.3)+3))};
+    },
+    // Puissances
+    puissances:function(){
+      const base=rint(2,6), exp=rint(2,3);
+      const ans=Math.pow(base,exp);
+      return {q:base+'^'+exp, ask:'احسب القوّة', ans:String(ans), options:numOptions(ans, Math.max(5,Math.round(ans*0.4)))};
+    },
+  };
+
+  const THEMES=[
+    {key:'fractions',name:'الكسور',icon:'½'},
+    {key:'pgcd',name:'ق.م.أ (PGCD)',icon:'🔢'},
+    {key:'ppcm',name:'م.م.أ (PPCM)',icon:'🔗'},
+    {key:'factorisation',name:'التحليل',icon:'✳️'},
+    {key:'priorites',name:'الأولويات',icon:'🧮'},
+    {key:'relatifs',name:'الأعداد النسبية',icon:'➕➖'},
+    {key:'puissances',name:'القوى',icon:'^'},
+  ];
+
+  const screens={home:document.getElementById('home'),play:document.getElementById('play'),result:document.getElementById('result')};
+  function show(n){Object.values(screens).forEach(s=>s.style.display='none');screens[n].style.display='block';}
+  let currentTheme='', qIndex=0, totalQ=10, score=0, streak=0, bestStreak=0, locked=false, current=null;
+
+  const themesEl=document.getElementById('themes');
+  THEMES.forEach(th=>{
+    const b=document.createElement('button');b.className='theme';
+    b.innerHTML='<span class="ico">'+th.icon+'</span><span class="t">'+th.name+'</span><span class="c">أسئلة لا نهائية</span>';
+    b.addEventListener('click',()=>startTheme(th.key));themesEl.appendChild(b);
+  });
+  const allBtn=document.createElement('button');allBtn.className='theme all';
+  allBtn.innerHTML='<span class="ico" style="font-size:24px;">🎲</span><span><span class="t">الكل مختلط</span><span class="c" style="display:block;">جميع المواضيع</span></span>';
+  allBtn.addEventListener('click',()=>startTheme('all'));themesEl.appendChild(allBtn);
+
+  function startTheme(key){
+    currentTheme=key; qIndex=0; totalQ=10; score=0; streak=0; bestStreak=0;
+    document.getElementById('scoreVal').textContent=0;
+    document.getElementById('streakVal').textContent=0;
+    show('play'); nextQuestion();
+  }
+
+  function genOne(){
+    let key=currentTheme;
+    if(key==='all'){ const keys=THEMES.map(t=>t.key); key=keys[rint(0,keys.length-1)]; }
+    return GENERATORS[key]();
+  }
+
+  function nextQuestion(){
+    locked=false;
+    current=genOne();
+    document.getElementById('qtxt').textContent=current.q;
+    document.getElementById('ask').textContent=current.ask;
+    document.getElementById('feedback').textContent='';
+    document.getElementById('progfill').style.width=((qIndex)/totalQ*100)+'%';
+    const box=document.getElementById('choices');box.innerHTML='';
+    current.options.forEach(opt=>{
+      const b=document.createElement('button');b.className='choice';b.textContent=opt;
+      b.addEventListener('click',()=>choose(b,opt));box.appendChild(b);
+    });
+  }
+
+  function choose(btn,opt){
+    if(locked)return;locked=true;sfx.tap();
+    const fb=document.getElementById('feedback');
+    document.querySelectorAll('.choice').forEach(c=>c.classList.add('locked'));
+    if(opt===current.ans){
+      btn.classList.add('correct');sfx.correct();
+      score+=10;streak++;if(streak>bestStreak)bestStreak=streak;
+      document.getElementById('scoreVal').textContent=score;
+      document.getElementById('streakVal').textContent=streak;
+      fb.textContent=pickPraise()+(streak>=3?' x'+streak+' !':'');fb.className='feedback good';
+      burst('⭐');if(streak>0&&streak%5===0){burst('🎉');burst('🔥');sfx.streak();}
+      setTimeout(next,600);
+    }else{
+      btn.classList.add('wrong');sfx.wrong();streak=0;
+      document.getElementById('streakVal').textContent=0;
+      document.querySelectorAll('.choice').forEach(c=>{if(c.textContent===current.ans)c.classList.add('correct');});
+      fb.textContent='الجواب : '+current.ans;fb.className='feedback bad';
+      setTimeout(next,1500);
+    }
+  }
+  function next(){qIndex++;if(qIndex>=totalQ)finish();else nextQuestion();}
+
+  const praises=['أحسنت !','ممتاز !','رائع !','عظيم !','مثالي !','بطل !','واو !'];
+  function pickPraise(){return praises[Math.floor(Math.random()*praises.length)];}
+  function burst(emoji){const el=document.createElement('div');el.className='burst';el.textContent=emoji;
+    el.style.left=(38+Math.random()*44)+'%';el.style.top='42%';document.body.appendChild(el);setTimeout(()=>el.remove(),1000);}
+
+  function finish(){
+    show('result');
+    const pct=score/(totalQ*10);
+    const stars=pct>=0.9?3:pct>=0.6?2:1;
+    document.getElementById('resScore').textContent=score+' نقطة · أطول سلسلة 🔥 '+bestStreak;
+    document.getElementById('resStars').textContent='★★★'.slice(0,stars)+'☆☆☆'.slice(0,3-stars);
+    let emoji,title,msg;
+    if(stars===3){emoji='🏆';title='بطل !';msg='رائع ! أنت متمكّن في الرياضيات. واصل هكذا 💪';sfx.win();}
+    else if(stars===2){emoji='🎉';title='جيد جداً !';msg='أحسنت ! قليل من التدريب وتصبح مثالياً.';sfx.win();}
+    else{emoji='💪';title='مجهود جيد !';msg='واصل التدريب، ستنجح ! يمكن لأستاذ أن يساعدك.';sfx.lose();}
+    document.getElementById('resEmoji').textContent=emoji;
+    document.getElementById('resTitle').textContent=title;
+    document.getElementById('resMsg').textContent=msg;
+  }
+
+  document.getElementById('playBack').addEventListener('click',()=>show('home'));
+  document.getElementById('resHome').addEventListener('click',()=>show('home'));
+  document.getElementById('resAgain').addEventListener('click',()=>startTheme(currentTheme));
+
+  show('home');
+</script>
+</body>
+</html>
