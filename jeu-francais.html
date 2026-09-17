@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Mou3allim — Défi Français</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap');
+  :root{
+    --teal:#0E7C66;--teal-d:#0A5D4C;--teal-l:#E3F3EB;
+    --amber:#F2A63B;--amber-d:#D07E12;
+    --coral:#F26D5B;--purple:#8B6DD6;--blue:#3F8FD6;--pink:#EC6A9C;
+    --ink:#1E2E29;--muted:#728A82;--card:#FFFFFF;--line:#EAE5DA;
+    --good:#1FA872;--bad:#EC5A44;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{font-family:'Baloo 2',system-ui,sans-serif;color:var(--ink);background:#F3EAF6;min-height:100%;overflow-x:hidden;position:relative;}
+  .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+  .blob{position:absolute;border-radius:50%;filter:blur(38px);opacity:.5;animation:float 14s ease-in-out infinite;}
+  .blob.b1{width:280px;height:280px;background:#D8CBF2;top:-60px;left:-70px;}
+  .blob.b2{width:240px;height:240px;background:#FBE2B8;bottom:-50px;right:-60px;animation-delay:-4s;}
+  .blob.b3{width:200px;height:200px;background:#BFE8D6;top:40%;right:-70px;animation-delay:-8s;}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(20px,-24px) scale(1.08);}}
+
+  .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:16px 16px 40px;min-height:100vh;display:flex;flex-direction:column;}
+  .brand{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px;font-weight:800;font-size:19px;color:var(--teal-d);}
+  .brand .m{width:32px;height:32px;border-radius:10px;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:17px;box-shadow:0 4px 10px rgba(14,124,102,.3);}
+  #muteBtn{position:absolute;right:0;background:var(--card);border:1px solid var(--line);border-radius:12px;width:42px;height:42px;font-size:19px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.05);}
+  #muteBtn:active{transform:scale(.92);}
+  .card{background:var(--card);border-radius:26px;box-shadow:0 14px 40px rgba(60,40,80,.12),0 2px 6px rgba(60,40,80,.05);}
+
+  .home{padding:26px 22px;text-align:center;}
+  .mascot{font-size:60px;line-height:1;margin-bottom:6px;animation:bounce 2s ease-in-out infinite;display:inline-block;}
+  @keyframes bounce{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-10px) rotate(3deg);}}
+  .home h1{font-size:31px;font-weight:800;line-height:1.05;margin-bottom:4px;}
+  .home h1 .em{color:var(--purple);}
+  .home p{color:var(--muted);font-size:15px;margin-bottom:22px;font-weight:500;}
+  .themes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .theme{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;
+    background:#fff;border:2.5px solid var(--line);border-radius:20px;padding:18px 10px;transition:.15s;font-family:inherit;}
+  .theme:active{transform:scale(.96);}
+  .theme:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(60,40,80,.12);border-color:var(--purple);}
+  .theme .ico{font-size:34px;line-height:1;}
+  .theme .t{font-weight:800;font-size:14.5px;}
+  .theme .c{font-size:11px;color:var(--muted);font-weight:500;}
+  .theme.all{grid-column:span 2;flex-direction:row;justify-content:center;gap:10px;background:var(--amber);border-color:var(--amber);color:#fff;}
+  .theme.all .t,.theme.all .c{color:#fff;}
+
+  .play{padding:20px;display:none;}
+  .hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .hud .pill{background:var(--teal-l);border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:5px;}
+  .hud .pill.streak{background:#FDECD0;color:var(--amber-d);}
+  .progbar{height:10px;background:#EEF2F0;border-radius:999px;overflow:hidden;margin:10px 0 16px;}
+  .progfill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--amber));border-radius:999px;transition:width .35s;}
+
+  .prompt{background:linear-gradient(135deg,#FAF6FD,#F3ECFA);border-radius:20px;padding:22px 16px;text-align:center;border:2px solid #E9DEF6;margin-bottom:16px;}
+  .prompt .qtxt{font-size:20px;font-weight:700;color:var(--ink);line-height:1.4;}
+  .prompt .qtxt .blank{color:var(--purple);background:#EDE4F8;border-radius:8px;padding:0 10px;}
+  .prompt .ask{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:8px;}
+
+  .choices{display:grid;gap:12px;}
+  .choice{border:2.5px solid var(--line);border-radius:18px;background:#fff;padding:15px;font-family:inherit;
+    font-weight:700;font-size:18px;cursor:pointer;transition:.12s;color:var(--ink);box-shadow:0 4px 0 var(--line);text-align:center;}
+  .choice:active{transform:translateY(4px);box-shadow:0 0 0 var(--line);}
+  .choice:hover:not(.locked){border-color:var(--purple);}
+  .choice.correct{background:#E4F7EE;border-color:var(--good);color:var(--good);box-shadow:0 4px 0 #B7E6CF;}
+  .choice.wrong{background:#FDEBE7;border-color:var(--bad);color:var(--bad);box-shadow:0 4px 0 #F5C9C0;animation:shake .35s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+  .feedback{text-align:center;min-height:40px;font-weight:600;font-size:14px;margin-top:12px;line-height:1.4;}
+  .feedback .big{font-weight:800;font-size:16px;}
+  .feedback.good .big{color:var(--good);} .feedback.bad .big{color:var(--bad);}
+  .feedback .expl{color:var(--muted);font-size:12.5px;margin-top:2px;}
+
+  .result{padding:28px 22px;text-align:center;display:none;}
+  .result .big{font-size:70px;margin-bottom:4px;animation:pop .5s;}
+  @keyframes pop{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
+  .result h2{font-size:28px;margin-bottom:2px;}
+  .result .score{font-size:15px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+  .stars{font-size:38px;letter-spacing:8px;margin:8px 0 18px;color:var(--amber);}
+  .result .msg{background:#F3EAF6;color:var(--purple);border-radius:16px;padding:13px;font-size:14.5px;font-weight:600;margin-bottom:18px;}
+  .btnrow{display:flex;gap:11px;}
+  .btn{flex:1;border:none;border-radius:18px;padding:16px;font-family:inherit;font-weight:800;font-size:16px;cursor:pointer;transition:.1s;}
+  .btn-primary{background:var(--teal);color:#fff;box-shadow:0 5px 0 var(--teal-d);}
+  .btn-primary:active{transform:translateY(4px);box-shadow:0 1px 0 var(--teal-d);}
+  .btn-ghost{background:#EEF2F0;color:var(--ink);box-shadow:0 5px 0 #DBE3DF;}
+  .btn-ghost:active{transform:translateY(4px);box-shadow:0 1px 0 #DBE3DF;}
+  .back{background:none;border:none;color:var(--muted);font-family:inherit;font-size:22px;cursor:pointer;padding:4px 8px;font-weight:700;}
+  .foot{text-align:center;margin-top:auto;padding-top:22px;color:var(--muted);font-size:12.5px;font-weight:500;}
+  .foot a{color:var(--teal-d);font-weight:700;text-decoration:none;}
+  .burst{position:fixed;pointer-events:none;font-size:24px;animation:fly 1s ease-out forwards;z-index:60;}
+  @keyframes fly{0%{opacity:1;transform:translateY(0) scale(.6) rotate(0);}100%{opacity:0;transform:translateY(-110px) scale(1.5) rotate(30deg);}}
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="wrap">
+  <div class="brand"><span class="m">M</span> Défi Français
+    <button id="muteBtn" title="Son">🔊</button>
+  </div>
+
+  <div class="card home" id="home">
+    <div class="mascot">🦉</div>
+    <h1>Défi <span class="em">Français</span></h1>
+    <p>Choisis un thème et deviens fort en grammaire ! ✏️</p>
+    <div class="themes" id="themes"></div>
+    <div class="foot">
+      Un jeu gratuit de <a href="https://mou3allim.com" target="_blank">mou3allim.com</a><br>
+      Besoin d'un professeur de français ? Trouve-le sur le site 💚
+    </div>
+  </div>
+
+  <div class="card play" id="play">
+    <div class="hud">
+      <button class="back" id="playBack">‹</button>
+      <div class="pill">⭐ <span id="scoreVal">0</span></div>
+      <div class="pill streak">🔥 <span id="streakVal">0</span></div>
+    </div>
+    <div class="progbar"><div class="progfill" id="progfill"></div></div>
+    <div class="prompt">
+      <div class="qtxt" id="qtxt">...</div>
+      <div class="ask" id="ask">Choisis la bonne réponse</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="big" id="resEmoji">🏆</div>
+    <h2 id="resTitle">Bravo !</h2>
+    <div class="score" id="resScore"></div>
+    <div class="stars" id="resStars"></div>
+    <div class="msg" id="resMsg"></div>
+    <div class="btnrow">
+      <button class="btn btn-ghost" id="resHome">Menu</button>
+      <button class="btn btn-primary" id="resAgain">Rejouer 🔄</button>
+    </div>
+    <div class="foot" style="margin-top:20px;">
+      Envie de progresser en français ?<br>
+      <a href="https://mou3allim.com" target="_blank">Trouve un professeur sur mou3allim.com →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- sound (embedded WAV, iOS-reliable placeholder via WebAudio+HTML fallback) ----------
+  let muted=false, actx=null, audioReady=false;
+  function ac(){ if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}} if(actx&&actx.state==='suspended'){actx.resume();} return actx; }
+  function tone(freq,start,dur,type,vol){ const a=ac(); if(!a||muted||!audioReady)return;
+    try{const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.value=freq;o.connect(g);g.connect(a.destination);
+    const t=a.currentTime+start;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.15,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.start(t);o.stop(t+dur+0.05);}catch(e){} }
+  const sfx={tap(){tone(320,0,0.05,'triangle',0.05);},
+    correct(){tone(660,0,0.12,'sine',0.16);tone(880,0.09,0.14,'sine',0.16);},
+    streak(){[523,659,784,1046].forEach((f,i)=>tone(f,i*0.08,0.16,'sine',0.16));},
+    wrong(){tone(200,0,0.18,'sine',0.12);tone(150,0.12,0.2,'sine',0.10);},
+    win(){[523,659,784,1046,1318].forEach((f,i)=>tone(f,i*0.11,0.22,'triangle',0.16));},
+    lose(){tone(392,0,0.2,'sine',0.12);tone(330,0.15,0.25,'sine',0.10);}};
+  function unlockAudio(){ const a=ac(); if(!a)return; if(a.state==='suspended')a.resume();
+    try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);}catch(e){}
+    audioReady=true; }
+  document.addEventListener('touchend',unlockAudio,false); document.addEventListener('click',unlockAudio,false);
+  const muteBtn=document.getElementById('muteBtn');
+  muteBtn.addEventListener('click',(e)=>{e.stopPropagation();muted=!muted;muteBtn.textContent=muted?'🔇':'🔊';unlockAudio();});
+
+  // ---------- content: French grammar questions by theme ----------
+  // Each: {q: "...", ask, options:[...], answer, expl}
+  const THEMES={
+    conjugaison:{name:"Conjugaison",icon:"⏳",qs:[
+      {q:"Je ___ à l’école.",ask:"« aller » présent",options:["vais","vas","va","allé"],answer:"vais",expl:"je vais."},
+      {q:"Tu ___ tes devoirs.",ask:"« faire » présent",options:["fais","fait","font","faites"],answer:"fais",expl:"tu fais."},
+      {q:"Nous ___ un livre.",ask:"« lire » présent",options:["lisons","lisez","lit","lisent"],answer:"lisons",expl:"nous lisons."},
+      {q:"Vous ___ du sport.",ask:"« faire » présent",options:["faites","faisez","fait","font"],answer:"faites",expl:"vous faites."},
+      {q:"Elles ___ contentes.",ask:"« être » présent",options:["sont","est","ont","êtes"],answer:"sont",expl:"elles sont."},
+      {q:"Il ___ un chien.",ask:"« avoir » présent",options:["a","as","ai","ont"],answer:"a",expl:"il a."},
+      {q:"Nous ___ à la maison.",ask:"« être » présent",options:["sommes","sont","êtes","est"],answer:"sommes",expl:"nous sommes."},
+      {q:"Je ___ mangé une pomme.",ask:"passé composé (auxiliaire)",options:["ai","suis","as","a"],answer:"ai",expl:"j’ai mangé (avoir)."},
+      {q:"Hier, il ___ au parc.",ask:"« aller » passé composé",options:["est allé","a allé","va","allait"],answer:"est allé",expl:"aller → être : il est allé."},
+      {q:"Elle ___ partie tôt.",ask:"« partir » passé composé",options:["est","a","était","avait"],answer:"est",expl:"partir → être : elle est partie."},
+      {q:"Demain, nous ___ à la mer.",ask:"« aller » futur",options:["irons","allons","irions","allions"],answer:"irons",expl:"futur : nous irons."},
+      {q:"Tu ___ grand plus tard.",ask:"« être » futur",options:["seras","es","étais","sois"],answer:"seras",expl:"futur : tu seras."},
+      {q:"Ils ___ leurs devoirs.",ask:"« finir » présent",options:["finissent","finir","finis","finit"],answer:"finissent",expl:"ils finissent."},
+      {q:"Je ___ français.",ask:"« parler » présent",options:["parle","parles","parlent","parlé"],answer:"parle",expl:"je parle."},
+      {q:"Vous ___ la vérité.",ask:"« dire » présent",options:["dites","disez","dit","disent"],answer:"dites",expl:"vous dites."},
+      {q:"Nous ___ nos amis.",ask:"« voir » présent",options:["voyons","voyez","voit","voient"],answer:"voyons",expl:"nous voyons."},
+      {q:"Elle ___ un gâteau.",ask:"« vouloir » présent",options:["veut","veux","voulez","veulent"],answer:"veut",expl:"elle veut."},
+      {q:"Je ___ venir demain.",ask:"« pouvoir » présent",options:["peux","peut","pouvez","peuvent"],answer:"peux",expl:"je peux."},
+      {q:"Tu ___ tes clés.",ask:"« prendre » présent",options:["prends","prend","prenez","prennent"],answer:"prends",expl:"tu prends."},
+      {q:"Ils ___ à la maison.",ask:"« rester » présent",options:["restent","reste","restes","restez"],answer:"restent",expl:"ils restent."}
+    ]},
+    accords:{name:"Les accords",icon:"🔗",qs:[
+      {q:"Les fille___ sont gentilles.",ask:"nom au pluriel",options:["s","es","x","∅"],answer:"s",expl:"les filles."},
+      {q:"Une voiture rouge___.",ask:"adjectif",options:["∅","e","s","es"],answer:"∅",expl:"« rouge » invariable au féminin."},
+      {q:"Des chevaux ___.",ask:"« blanc » masc. pluriel",options:["blancs","blanc","blanche","blanches"],answer:"blancs",expl:"chevaux blancs."},
+      {q:"Elle est ___.",ask:"« heureux » féminin",options:["heureuse","heureux","heureuses","heureu"],answer:"heureuse",expl:"féminin : heureuse."},
+      {q:"Les grand___ maisons.",ask:"adjectif fém. pluriel",options:["es","s","e","∅"],answer:"es",expl:"grandes."},
+      {q:"Ils sont ___.",ask:"« content » masc. pluriel",options:["contents","content","contente","contentes"],answer:"contents",expl:"ils sont contents."},
+      {q:"Une robe ___.",ask:"« neuf » féminin",options:["neuve","neuf","neuves","neufe"],answer:"neuve",expl:"féminin : neuve."},
+      {q:"Des enfants ___.",ask:"« sage » pluriel",options:["sages","sage","sags","sagees"],answer:"sages",expl:"des enfants sages."},
+      {q:"Les chats ___.",ask:"« noir » masc. pluriel",options:["noirs","noir","noire","noires"],answer:"noirs",expl:"chats noirs."},
+      {q:"Une fleur ___.",ask:"« beau » féminin",options:["belle","beau","beaux","belles"],answer:"belle",expl:"féminin : belle."},
+      {q:"Ces livres sont ___.",ask:"« intéressant » masc. pluriel",options:["intéressants","intéressant","intéressante","intéressantes"],answer:"intéressants",expl:"livres intéressants."},
+      {q:"Les tables ___.",ask:"« rond » fém. pluriel",options:["rondes","ronds","ronde","rond"],answer:"rondes",expl:"tables rondes."},
+      {q:"Une histoire ___.",ask:"« long » féminin",options:["longue","long","longs","longues"],answer:"longue",expl:"féminin : longue."},
+      {q:"Des garçons ___.",ask:"« poli » masc. pluriel",options:["polis","poli","polie","polies"],answer:"polis",expl:"garçons polis."},
+      {q:"Elle a les cheveux ___.",ask:"« court » masc. pluriel",options:["courts","court","courte","courtes"],answer:"courts",expl:"cheveux courts."},
+      {q:"Une maison ___.",ask:"« vieux » féminin",options:["vieille","vieux","vieil","vieilles"],answer:"vieille",expl:"féminin : vieille."},
+      {q:"Les élèves ___.",ask:"« attentif » masc. pluriel",options:["attentifs","attentif","attentive","attentives"],answer:"attentifs",expl:"élèves attentifs."},
+      {q:"Une réponse ___.",ask:"« faux » féminin",options:["fausse","faux","fausses","faus"],answer:"fausse",expl:"féminin : fausse."},
+      {q:"Des jardins ___.",ask:"« vert » masc. pluriel",options:["verts","vert","verte","vertes"],answer:"verts",expl:"jardins verts."},
+      {q:"La petite ___ joue.",ask:"nom féminin",options:["fille","fils","garçon","chat"],answer:"fille",expl:"« petite » → un nom féminin."}
+    ]},
+    articles:{name:"Articles",icon:"🔤",qs:[
+      {q:"___ soleil brille.",ask:"article défini",options:["Le","La","Les","L’"],answer:"Le",expl:"le soleil."},
+      {q:"Je vois ___ oiseau.",ask:"article",options:["un","une","des","le"],answer:"un",expl:"un oiseau."},
+      {q:"___ eau est fraîche.",ask:"devant voyelle",options:["L’","Le","La","Les"],answer:"L’",expl:"l’eau (élision)."},
+      {q:"Il mange ___ pommes.",ask:"article",options:["des","un","une","le"],answer:"des",expl:"des pommes."},
+      {q:"___ maison est belle.",ask:"article féminin",options:["La","Le","Les","Un"],answer:"La",expl:"la maison."},
+      {q:"J’ai ___ chat.",ask:"article",options:["un","une","des","la"],answer:"un",expl:"un chat."},
+      {q:"___ enfants jouent.",ask:"article pluriel",options:["Les","Le","La","L’"],answer:"Les",expl:"les enfants."},
+      {q:"Je bois ___ eau.",ask:"article partitif",options:["de l’","du","de la","le"],answer:"de l’",expl:"de l’eau."},
+      {q:"Il mange ___ pain.",ask:"article partitif",options:["du","de la","des","le"],answer:"du",expl:"du pain."},
+      {q:"Elle achète ___ farine.",ask:"article partitif",options:["de la","du","des","le"],answer:"de la",expl:"de la farine."},
+      {q:"___ arbre est grand.",ask:"devant voyelle",options:["L’","Le","La","Les"],answer:"L’",expl:"l’arbre."},
+      {q:"Voici ___ stylo.",ask:"article",options:["un","une","des","la"],answer:"un",expl:"un stylo."},
+      {q:"___ fleurs sentent bon.",ask:"article pluriel",options:["Les","Le","La","L’"],answer:"Les",expl:"les fleurs."},
+      {q:"Je veux ___ pomme.",ask:"article féminin",options:["une","un","des","le"],answer:"une",expl:"une pomme."},
+      {q:"___ chien aboie.",ask:"article défini",options:["Le","La","Les","L’"],answer:"Le",expl:"le chien."},
+      {q:"Nous avons ___ devoirs.",ask:"article pluriel",options:["des","un","une","le"],answer:"des",expl:"des devoirs."},
+      {q:"___ école est fermée.",ask:"devant voyelle",options:["L’","Le","La","Les"],answer:"L’",expl:"l’école."},
+      {q:"C’est ___ belle journée.",ask:"article féminin",options:["une","un","des","la"],answer:"une",expl:"une belle journée."},
+      {q:"___ garçons courent.",ask:"article pluriel",options:["Les","Le","La","L’"],answer:"Les",expl:"les garçons."},
+      {q:"Je mange ___ riz.",ask:"article partitif",options:["du","de la","des","le"],answer:"du",expl:"du riz."}
+    ]},
+    homophones:{name:"Homophones",icon:"👂",qs:[
+      {q:"Il ___ content.",ask:"est / et",options:["est","et","ai","es"],answer:"est",expl:"« est » = être."},
+      {q:"Paul ___ Marie jouent.",ask:"est / et",options:["et","est","ai","es"],answer:"et",expl:"« et » relie deux mots."},
+      {q:"Je vais ___ la maison.",ask:"a / à",options:["à","a","as","at"],answer:"à",expl:"« à » = préposition."},
+      {q:"Il ___ un chien.",ask:"a / à",options:["a","à","as","at"],answer:"a",expl:"« a » = avoir."},
+      {q:"___ sont mes amis.",ask:"Ce / Se",options:["Ce","Se","Ces","Ses"],answer:"Ce",expl:"« ce sont »."},
+      {q:"___ livres sont à moi.",ask:"Ces / Ses",options:["Ces","Ses","C’est","Sais"],answer:"Ces",expl:"« ces » = pluriel de ce."},
+      {q:"Il prend ___ cartable.",ask:"son / sont",options:["son","sont","sons","cont"],answer:"son",expl:"« son » = possessif."},
+      {q:"Ils ___ à l’école.",ask:"son / sont",options:["sont","son","sons","cont"],answer:"sont",expl:"« sont » = être."},
+      {q:"___ vas-tu ?",ask:"Où / Ou",options:["Où","Ou","Oux","Aou"],answer:"Où",expl:"« où » = lieu."},
+      {q:"Café ___ thé ?",ask:"Où / Ou",options:["ou","où","oux","aou"],answer:"ou",expl:"« ou » = choix."},
+      {q:"C’___ facile.",ask:"est / es",options:["est","es","et","ai"],answer:"est",expl:"c’est."},
+      {q:"Tu ___ gentil.",ask:"es / est",options:["es","est","et","ai"],answer:"es",expl:"tu es."},
+      {q:"Je ___ nager.",ask:"sais / c’est",options:["sais","c’est","ces","ses"],answer:"sais",expl:"je sais (savoir)."},
+      {q:"Il a mangé ___ pomme.",ask:"sa / ça",options:["sa","ça","çà","ca"],answer:"sa",expl:"« sa » = possessif."},
+      {q:"___ ne va pas.",ask:"Ça / Sa",options:["Ça","Sa","Çà","Ca"],answer:"Ça",expl:"« ça » = cela."},
+      {q:"Elle met ___ manteau.",ask:"son / sont",options:["son","sont","sons","cont"],answer:"son",expl:"son manteau."},
+      {q:"Nous allons ___ marché.",ask:"au / o",options:["au","o","aux","eau"],answer:"au",expl:"au marché."},
+      {q:"Il y a ___ enfants.",ask:"des / dès",options:["des","dès","dé","dais"],answer:"des",expl:"« des » = article."},
+      {q:"___ demain !",ask:"Dès / Des",options:["Dès","Des","Dé","Dais"],answer:"Dès",expl:"« dès » = à partir de."},
+      {q:"Je ___ mes devoirs.",ask:"fais / fait",options:["fais","fait","faits","fé"],answer:"fais",expl:"je fais."}
+    ]},
+    nature:{name:"Nature des mots",icon:"🏷️",qs:[
+      {q:"« rapidement » est un ___.",ask:"nature",options:["adverbe","adjectif","nom","verbe"],answer:"adverbe",expl:"-ment → adverbe."},
+      {q:"« maison » est un ___.",ask:"nature",options:["nom","verbe","adjectif","adverbe"],answer:"nom",expl:"une chose → nom."},
+      {q:"« manger » est un ___.",ask:"nature",options:["verbe","nom","adjectif","adverbe"],answer:"verbe",expl:"une action → verbe."},
+      {q:"« beau » est un ___.",ask:"nature",options:["adjectif","nom","verbe","adverbe"],answer:"adjectif",expl:"qualifie un nom → adjectif."},
+      {q:"« elle » est un ___.",ask:"nature",options:["pronom","nom","verbe","adjectif"],answer:"pronom",expl:"remplace un nom → pronom."},
+      {q:"« et » est une ___.",ask:"nature",options:["conjonction","nom","verbe","adjectif"],answer:"conjonction",expl:"relie → conjonction."},
+      {q:"« sous » est une ___.",ask:"nature",options:["préposition","nom","verbe","adverbe"],answer:"préposition",expl:"« sous » = préposition."},
+      {q:"« le » est un ___.",ask:"nature",options:["article","nom","verbe","adverbe"],answer:"article",expl:"« le » = article."},
+      {q:"« courir » est un ___.",ask:"nature",options:["verbe","nom","adjectif","adverbe"],answer:"verbe",expl:"action → verbe."},
+      {q:"« gentil » est un ___.",ask:"nature",options:["adjectif","nom","verbe","adverbe"],answer:"adjectif",expl:"qualifie → adjectif."},
+      {q:"« lentement » est un ___.",ask:"nature",options:["adverbe","adjectif","nom","verbe"],answer:"adverbe",expl:"-ment → adverbe."},
+      {q:"« chien » est un ___.",ask:"nature",options:["nom","verbe","adjectif","adverbe"],answer:"nom",expl:"un animal → nom."},
+      {q:"« nous » est un ___.",ask:"nature",options:["pronom","nom","verbe","article"],answer:"pronom",expl:"« nous » = pronom."},
+      {q:"« grand » est un ___.",ask:"nature",options:["adjectif","nom","verbe","adverbe"],answer:"adjectif",expl:"qualifie → adjectif."},
+      {q:"« dans » est une ___.",ask:"nature",options:["préposition","nom","verbe","adverbe"],answer:"préposition",expl:"« dans » = préposition."},
+      {q:"« une » est un ___.",ask:"nature",options:["article","nom","verbe","pronom"],answer:"article",expl:"« une » = article."},
+      {q:"« chanter » est un ___.",ask:"nature",options:["verbe","nom","adjectif","adverbe"],answer:"verbe",expl:"action → verbe."},
+      {q:"« joli » est un ___.",ask:"nature",options:["adjectif","nom","verbe","adverbe"],answer:"adjectif",expl:"qualifie → adjectif."},
+      {q:"« bien » est un ___.",ask:"nature",options:["adverbe","adjectif","nom","verbe"],answer:"adverbe",expl:"« bien » = adverbe."},
+      {q:"« table » est un ___.",ask:"nature",options:["nom","verbe","adjectif","adverbe"],answer:"nom",expl:"une chose → nom."}
+    ]},
+    ponctuation:{name:"Ponctuation",icon:"❓",qs:[
+      {q:"Quelle heure est-il ___",ask:"signe",options:["?",".","!",","],answer:"?",expl:"question → « ? »."},
+      {q:"Attention ___",ask:"signe",options:["!","?",".",";"],answer:"!",expl:"exclamation → « ! »."},
+      {q:"Je mange une pomme___",ask:"phrase déclarative",options:[".","?","!",":"],answer:".",expl:"→ point."},
+      {q:"Il achète des pommes ___ des poires.",ask:"entre éléments",options:[",",".","?","!"],answer:",",expl:"→ virgule."},
+      {q:"Voici la liste ___ pain, lait, œufs.",ask:"avant une énumération",options:[":",";",".","?"],answer:":",expl:"→ deux-points."},
+      {q:"Comme c’est beau ___",ask:"signe",options:["!","?",".",","],answer:"!",expl:"exclamation → « ! »."},
+      {q:"Où habites-tu ___",ask:"signe",options:["?",".","!",";"],answer:"?",expl:"question → « ? »."},
+      {q:"Il fait beau ___ allons dehors.",ask:"deux phrases liées",options:[";",",",".","?"],answer:";",expl:"→ point-virgule."},
+      {q:"« Bonjour ___ » dit-il.",ask:"dans un dialogue",options:["!",".","?",";"],answer:"!",expl:"salutation → « ! »."},
+      {q:"Le chat ___ noir dort.",ask:"est-ce nécessaire ?",options:["(rien)",",",";",":"],answer:"(rien)",expl:"pas de ponctuation ici."},
+      {q:"Tu viens ___",ask:"signe",options:["?",".","!",","],answer:"?",expl:"question → « ? »."},
+      {q:"J’aime le sport ___",ask:"phrase déclarative",options:[".","?","!",":"],answer:".",expl:"→ point."},
+      {q:"Stop ___",ask:"signe",options:["!","?",".",","],answer:"!",expl:"exclamation → « ! »."},
+      {q:"Il achète du pain ___ du lait ___ des œufs.",ask:"entre éléments",options:[",","."," ?","!"],answer:",",expl:"→ virgules."},
+      {q:"Bravo ___",ask:"signe",options:["!","?",".",";"],answer:"!",expl:"exclamation → « ! »."},
+      {q:"Est-ce que tu as fini ___",ask:"signe",options:["?",".","!",","],answer:"?",expl:"question → « ? »."},
+      {q:"Le soleil brille ___",ask:"phrase déclarative",options:[".","?","!",":"],answer:".",expl:"→ point."},
+      {q:"Elle demande ___ « As-tu faim ? »",ask:"avant les guillemets",options:[":",";",".",","],answer:":",expl:"→ deux-points."},
+      {q:"Quel beau match ___",ask:"signe",options:["!","?",".",";"],answer:"!",expl:"exclamation → « ! »."},
+      {q:"Je pars ___ à demain !",ask:"séparer deux idées",options:[";",",",".","?"],answer:";",expl:"→ point-virgule."}
+    ]}
+  };
+
+  const screens={home:document.getElementById('home'),play:document.getElementById('play'),result:document.getElementById('result')};
+  function show(n){Object.values(screens).forEach(s=>s.style.display='none');screens[n].style.display='block';}
+  let qList=[], qIndex=0, totalQ=10, score=0, streak=0, bestStreak=0, locked=false, currentTheme='';
+
+  const themesEl=document.getElementById('themes');
+  Object.entries(THEMES).forEach(([key,th])=>{
+    const b=document.createElement('button');b.className='theme';
+    b.innerHTML=`<span class="ico">${th.icon}</span><span class="t">${th.name}</span><span class="c">${th.qs.length} questions</span>`;
+    b.addEventListener('click',()=>startTheme(key));themesEl.appendChild(b);
+  });
+  const allBtn=document.createElement('button');allBtn.className='theme all';
+  allBtn.innerHTML=`<span class="ico" style="font-size:24px;">🎲</span><span><span class="t">Tout mélangé</span><span class="c" style="display:block;">Tous les thèmes</span></span>`;
+  allBtn.addEventListener('click',()=>startTheme('all'));themesEl.appendChild(allBtn);
+
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+  function startTheme(key){
+    currentTheme=key;
+    let pool=[];
+    if(key==='all'){ Object.values(THEMES).forEach(th=>pool.push(...th.qs)); }
+    else pool=[...THEMES[key].qs];
+    qList=shuffle([...pool]).slice(0, Math.min(10, pool.length));
+    totalQ=qList.length; qIndex=0; score=0; streak=0; bestStreak=0;
+    document.getElementById('scoreVal').textContent=0;
+    document.getElementById('streakVal').textContent=0;
+    show('play'); renderQuestion();
+  }
+
+  function renderQuestion(){
+    locked=false;
+    const item=qList[qIndex];
+    // put blank styling on ___ 
+    const qHtml = item.q.replace(/___/g,'<span class="blank">?</span>');
+    document.getElementById('qtxt').innerHTML=qHtml;
+    document.getElementById('ask').textContent=item.ask||'Choisis la bonne réponse';
+    document.getElementById('feedback').textContent='';
+    document.getElementById('feedback').className='feedback';
+    document.getElementById('progfill').style.width=((qIndex)/totalQ*100)+'%';
+    const options=shuffle([...item.options]);
+    const box=document.getElementById('choices');box.innerHTML='';
+    options.forEach(opt=>{
+      const b=document.createElement('button');b.className='choice';
+      b.textContent = opt==='∅' ? '(rien)' : opt;
+      b.addEventListener('click',()=>choose(b,opt,item));box.appendChild(b);
+    });
+  }
+
+  function choose(btn,opt,item){
+    if(locked)return;locked=true;sfx.tap();
+    const fb=document.getElementById('feedback');
+    document.querySelectorAll('.choice').forEach(c=>c.classList.add('locked'));
+    if(opt===item.answer){
+      btn.classList.add('correct');sfx.correct();
+      score+=10;streak++;if(streak>bestStreak)bestStreak=streak;
+      document.getElementById('scoreVal').textContent=score;
+      document.getElementById('streakVal').textContent=streak;
+      fb.className='feedback good';
+      fb.innerHTML=`<div class="big">${pickPraise()}${streak>=3?' x'+streak+'!':''}</div><div class="expl">${escapeHtml(item.expl||'')}</div>`;
+      burst('⭐');if(streak>0&&streak%5===0){burst('🎉');burst('🔥');sfx.streak();}
+      setTimeout(next,1100);
+    }else{
+      btn.classList.add('wrong');sfx.wrong();streak=0;
+      document.getElementById('streakVal').textContent=0;
+      document.querySelectorAll('.choice').forEach(c=>{ if(c.textContent===(item.answer==='∅'?'(rien)':item.answer))c.classList.add('correct'); });
+      fb.className='feedback bad';
+      fb.innerHTML=`<div class="big">La réponse : ${item.answer==='∅'?'(rien)':escapeHtml(item.answer)}</div><div class="expl">${escapeHtml(item.expl||'')}</div>`;
+      setTimeout(next,1900);
+    }
+  }
+  function next(){qIndex++;if(qIndex>=totalQ)finish();else renderQuestion();}
+
+  const praises=['Bravo !','Super !','Génial !','Excellent !','Parfait !','Bien vu !','Top !','Waouh !'];
+  function pickPraise(){return praises[Math.floor(Math.random()*praises.length)];}
+  function escapeHtml(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML;}
+  function burst(emoji){const el=document.createElement('div');el.className='burst';el.textContent=emoji;
+    el.style.left=(38+Math.random()*44)+'%';el.style.top='42%';document.body.appendChild(el);setTimeout(()=>el.remove(),1000);}
+
+  function finish(){
+    show('result');
+    const pct=score/(totalQ*10);
+    const stars=pct>=0.9?3:pct>=0.6?2:1;
+    document.getElementById('resScore').textContent=`${score} points · série max 🔥 ${bestStreak}`;
+    document.getElementById('resStars').textContent='★★★'.slice(0,stars)+'☆☆☆'.slice(0,3-stars);
+    let emoji,title,msg;
+    if(stars===3){emoji='🏆';title='Champion !';msg='Excellent ! Ta grammaire est au top. Continue 💪';sfx.win();}
+    else if(stars===2){emoji='🎉';title='Très bien !';msg="Bravo ! Encore un peu et c’est parfait.";sfx.win();}
+    else{emoji='💪';title='Bon effort !';msg="Continue à t’entraîner ! Un professeur peut t’aider à progresser vite.";sfx.lose();}
+    document.getElementById('resEmoji').textContent=emoji;
+    document.getElementById('resTitle').textContent=title;
+    document.getElementById('resMsg').textContent=msg;
+  }
+
+  document.getElementById('playBack').addEventListener('click',()=>show('home'));
+  document.getElementById('resHome').addEventListener('click',()=>show('home'));
+  document.getElementById('resAgain').addEventListener('click',()=>startTheme(currentTheme));
+
+  show('home');
+</script>
+</body>
+</html>
