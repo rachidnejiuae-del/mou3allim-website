@@ -65,7 +65,7 @@ const api = {
     return apiRequest(`/teachers/search?${qs.toString()}`, { auth: false });
   },
   getTeacher: (id) => apiRequest(`/teachers/${id}`, { auth: false }),
-  track: (event) => { try { fetch(`${API_BASE_URL}/track`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ event }) }).catch(()=>{}); } catch(e){} },
+  track: (event, teacherId) => { try { const payload = { event }; const tid = parseInt(teacherId, 10); if (Number.isInteger(tid) && tid > 0) payload.teacherId = tid; fetch(`${API_BASE_URL}/track`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }).catch(()=>{}); } catch(e){} },
   getRatings: (id) => apiRequest(`/teachers/${id}/ratings`, { auth: false }),
   rateTeacher: (id, payload) => apiRequest(`/teachers/${id}/ratings`, { method: 'POST', body: payload, auth: true }),
 
