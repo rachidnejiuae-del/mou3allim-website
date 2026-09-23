@@ -1,5 +1,8 @@
 // Shared navigation bar, injected into every page's <div id="nav-root"></div>
 function renderNav(active) {
+  // ---- PWA setup (runs once per page load, on every page that uses the nav) ----
+  setupPWA();
+
   const root = document.getElementById('nav-root');
   if (!root) return;
   const user = auth.getUser();
@@ -52,4 +55,58 @@ function renderNav(active) {
   if (logoutBtn) logoutBtn.addEventListener('click', () => { auth.clear(); window.location.href = 'index.html'; });
 
   applyLang();
+}
+
+// ---- Progressive Web App: manifest + tags + service worker + install button ----
+let _deferredInstallPrompt = null;
+
+function setupPWA() {
+  try {
+    // Add manifest + theme + apple tags to <head> once.
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const head = document.head;
+      const add = (tag, attrs) => { const el = document.createElement(tag); Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v)); head.appendChild(el); };
+      add('link', { rel: 'manifest', href: '/manifest.json' });
+      add('meta', { name: 'theme-color', content: '#0E7C66' });
+      add('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
+      add('meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'default' });
+      add('meta', { name: 'apple-mobile-web-app-title', content: 'Mou3allim' });
+      add('link', { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png' });
+    }
+
+    // Register the service worker.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+
+    // Capture the install prompt so we can show our own button.
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      _deferredInstallPrompt = e;
+      showInstallButton();
+    });
+    window.addEventListener('appinstalled', () => {
+      _deferredInstallPrompt = null;
+      const b = document.getElementById('pwaInstallBtn');
+      if (b) b.remove();
+    });
+  } catch (e) {}
+}
+
+function showInstallButton() {
+  if (document.getElementById('pwaInstallBtn')) return;
+  const btn = document.createElement('button');
+  btn.id = 'pwaInstallBtn';
+  btn.textContent = '📲 Installer l\'application';
+  btn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:9999;background:#0E7C66;color:#fff;border:none;padding:13px 22px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(14,124,102,.4);cursor:pointer;font-family:inherit;';
+  btn.addEventListener('click', async () => {
+    if (!_deferredInstallPrompt) return;
+    _deferredInstallPrompt.prompt();
+    await _deferredInstallPrompt.userChoice;
+    _deferredInstallPrompt = null;
+    btn.remove();
+  });
+  document.body.appendChild(btn);
 }
