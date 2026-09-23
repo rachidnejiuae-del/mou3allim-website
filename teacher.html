@@ -135,10 +135,10 @@
 
       <!-- Contacts shown directly (no multi-step gate) with a visible safety notice. -->
       <div style="margin-top:6px;">
-        <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);" onclick="if(typeof api!=='undefined'&&api.track)api.track('call_click');">
+        <a href="tel:${t.phone.replace(/\s/g,'')}" class="action-btn" style="background:var(--teal);" onclick="if(typeof api!=='undefined'&&api.track)api.track('call_click', teacherId);">
           📞 ${window.t('profile_call')} ${escapeHtml(t.phone)}
         </a>
-        <a href="https://wa.me/${t.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Bonjour, je vous contacte via Mou3allim.')}" target="_blank" class="action-btn" style="background:#25D366;" onclick="if(typeof api!=='undefined'&&api.track)api.track('whatsapp_click');">
+        <a href="https://wa.me/${t.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('Bonjour, je vous contacte via Mou3allim.')}" target="_blank" class="action-btn" style="background:#25D366;" onclick="if(typeof api!=='undefined'&&api.track)api.track('whatsapp_click', teacherId);">
           💬 WhatsApp
         </a>
       </div>
@@ -236,7 +236,7 @@
   });
 
   loadProfile();
-  if (typeof api !== 'undefined' && api.track) api.track('profile_view');
+  if (typeof api !== 'undefined' && api.track) api.track('profile_view', teacherId);
 </script>
 </body>
 </html>
