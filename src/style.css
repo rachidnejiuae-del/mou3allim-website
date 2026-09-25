@@ -243,3 +243,37 @@ body.rtl h1, body.rtl h2, body.rtl h3, body.rtl .display {
   font-size: 13px; font-weight: 700; color: var(--muted); transition: all 0.15s;
 }
 .lang-btn.active { background: var(--teal); color: white; }
+
+/* ---------- RTL (Arabic) — extended layout flips ---------- */
+[dir="rtl"] body,
+[dir="rtl"] .split-card,
+[dir="rtl"] .step-card { text-align: right; }
+[dir="rtl"] .text-center,
+[dir="rtl"] .hero-inner,
+[dir="rtl"] .section-head { text-align: center; }
+
+[dir="rtl"] .nav-inner { flex-direction: row-reverse; }
+[dir="rtl"] .logo { flex-direction: row-reverse; }
+[dir="rtl"] .nav-links { flex-direction: row-reverse; }
+
+[dir="rtl"] .btn { flex-direction: row-reverse; }
+[dir="rtl"] .hero-actions { flex-direction: row-reverse; }
+
+[dir="rtl"] .split-list li { flex-direction: row-reverse; text-align: right; }
+
+[dir="rtl"] .action-btn { flex-direction: row-reverse; }
+[dir="rtl"] .profile-loc { flex-direction: row-reverse; }
+[dir="rtl"] .subject-row,
+[dir="rtl"] .review-head { flex-direction: row-reverse; }
+
+[dir="rtl"] .hero-search { flex-direction: row-reverse; }
+
+/* Keep prices/numbers reading left-to-right, e.g. "15 DT/h" */
+[dir="rtl"] .price,
+[dir="rtl"] .subject-row .price,
+[dir="rtl"] .teacher-price { direction: ltr; unicode-bidi: embed; }
+
+.lang-switch { margin-inline-start: 4px; }
+@media (max-width: 640px) {
+  .lang-switch .lang-btn { padding: 6px 10px; font-size: 12px; }
+}
