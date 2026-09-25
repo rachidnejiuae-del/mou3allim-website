@@ -62,6 +62,7 @@ const translations = {
     search_count_found_1: 'professeur trouvé',
     search_count_found_n: 'professeurs trouvés',
     search_see_below: 'voir plus ci-dessous',
+    banner_install: "📲 Installez l'application Mou3allim sur votre téléphone — appuyez ici pour voir comment",
 
     back_to_search: '← Retour à la recherche',
     profile_call: 'Appeler',
@@ -222,6 +223,7 @@ const translations = {
     search_count_found_1: 'أستاذ',
     search_count_found_n: 'أستاذ',
     search_see_below: 'شاهد المزيد أدناه',
+    banner_install: '📲 ثبّت تطبيق Mou3allim على هاتفك — اضغط هنا لمعرفة الطريقة',
 
     back_to_search: '← العودة إلى البحث',
     profile_call: 'اتصال',
