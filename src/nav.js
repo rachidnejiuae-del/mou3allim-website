@@ -41,23 +41,33 @@ function renderNav(active) {
         <div class="nav-links">
           <a href="search.html" class="nav-link nav-link-desktop" data-i18n="nav_find_teacher">${t('nav_find_teacher')}</a>
           <a href="jeux.html" class="nav-jeux">🎮 Jeux gratuits</a>
+          <div class="lang-switch" id="langSwitch">
+            <button class="lang-btn ${lang === 'fr' ? 'active' : ''}" data-lang="fr">FR</button>
+            <button class="lang-btn ${lang === 'ar' ? 'active' : ''}" data-lang="ar">ع</button>
+          </div>
           ${rightSide}
         </div>
       </div>
     </nav>
   `;
 
-  // Arabic temporarily hidden until it is translated properly. Force French so
-  // no one is stuck on a half-translated Arabic view. Re-enable by restoring the
-  // lang-switch block above and these listeners.
-  if (getLang() !== 'fr') setLang('fr');
+  // Language switch (default is French via getLang(); choice is remembered).
+  document.querySelectorAll('#langSwitch .lang-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const chosen = btn.getAttribute('data-lang');
+      if (chosen === getLang()) return;
+      setLang(chosen);          // saves choice + calls applyLang()
+      renderNav(active);        // re-render nav so the active pill + direction update
+    });
+  });
+
   const logoutBtn = document.getElementById('navLogoutBtn');
   if (logoutBtn) logoutBtn.addEventListener('click', () => { auth.clear(); window.location.href = 'index.html'; });
 
   applyLang();
 }
 
-// ---- Progressive Web App: manifest + tags + service worker + install button ----
+// ---- Progressive Web App: manifest + tags + service worker + install hints ----
 let _deferredInstallPrompt = null;
 
 function setupPWA() {
@@ -81,18 +91,65 @@ function setupPWA() {
       });
     }
 
-    // Capture the install prompt so we can show our own button.
+    // Android/Chrome: capture the install prompt so we can show our own button.
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       _deferredInstallPrompt = e;
       showInstallButton();
+      showInstallHint('android');
     });
     window.addEventListener('appinstalled', () => {
       _deferredInstallPrompt = null;
       const b = document.getElementById('pwaInstallBtn');
       if (b) b.remove();
+      dismissHint();
     });
+
+    // iPhone/Safari: no beforeinstallprompt exists. Detect iOS Safari (not already
+    // installed) and show the manual "Add to Home Screen" hint.
+    setTimeout(maybeShowIosHint, 1500);
   } catch (e) {}
+}
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function maybeShowIosHint() {
+  try {
+    if (isStandalone()) return;
+    const ua = window.navigator.userAgent || '';
+    const isIos = /iPhone|iPad|iPod/i.test(ua);
+    const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+    if (isIos && isSafari) showInstallHint('ios');
+  } catch (e) {}
+}
+
+// Shows a one-time dismissible install hint. type = 'android' | 'ios'.
+function showInstallHint(type) {
+  try {
+    if (isStandalone()) return;
+    // Only show once per device (remember dismissal).
+    if (localStorage.getItem('pwa_hint_dismissed') === '1') return;
+    if (document.getElementById('pwaHint')) return;
+
+    const msg = type === 'ios'
+      ? `📲 Installez Mou3allim : appuyez sur <b>Partager</b> ⬆️ puis <b>« Sur l'écran d'accueil »</b>.`
+      : `📲 Installez l'application Mou3allim sur votre téléphone — appuyez sur le bouton vert <b>« Installer »</b> ci-dessous.`;
+
+    const bar = document.createElement('div');
+    bar.id = 'pwaHint';
+    bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:76px;z-index:9998;background:#fff;border:1px solid #ECE7DE;border-left:4px solid #0E7C66;border-radius:14px;padding:13px 44px 13px 15px;box-shadow:0 8px 28px rgba(20,50,40,.18);font-family:inherit;font-size:13.5px;color:#1C1C1E;line-height:1.5;max-width:520px;margin:0 auto;';
+    bar.innerHTML = `${msg}<button id="pwaHintClose" aria-label="Fermer" style="position:absolute;top:8px;right:10px;background:none;border:none;font-size:18px;color:#999;cursor:pointer;line-height:1;">×</button>`;
+    document.body.appendChild(bar);
+    document.getElementById('pwaHintClose').addEventListener('click', dismissHint);
+  } catch (e) {}
+}
+
+function dismissHint() {
+  try { localStorage.setItem('pwa_hint_dismissed', '1'); } catch (e) {}
+  const b = document.getElementById('pwaHint');
+  if (b) b.remove();
 }
 
 function showInstallButton() {
@@ -107,6 +164,7 @@ function showInstallButton() {
     await _deferredInstallPrompt.userChoice;
     _deferredInstallPrompt = null;
     btn.remove();
+    dismissHint();
   });
   document.body.appendChild(btn);
 }
