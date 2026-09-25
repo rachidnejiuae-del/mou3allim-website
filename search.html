@@ -67,11 +67,11 @@
       <div class="filter-scroll" id="areaChips"></div>
     </div>
     <div class="filter-row">
-      <div class="filter-label">Niveau</div>
+      <div class="filter-label" data-i18n="filter_level">Niveau</div>
       <div class="filter-scroll" id="levelChips"></div>
     </div>
     <div class="filter-row">
-      <div class="filter-label">Diplôme du professeur (optionnel)</div>
+      <div class="filter-label" data-i18n="filter_degree">Diplôme du professeur (optionnel)</div>
       <div class="filter-scroll" id="degreeChips"></div>
     </div>
   </div>
@@ -79,7 +79,7 @@
 
 <div class="results-wrap">
   <div style="background:#FFF8E7;border:1px solid #F0D48A;border-radius:12px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:#7A5E12;line-height:1.5;">
-    ⚠️ <strong>Sécurité :</strong> Mou3allim ne vérifie pas l'identité des professeurs. Vérifiez toujours l'identité et les références d'un professeur avant tout cours, pour la sécurité de votre famille.
+    ⚠️ <span data-i18n="search_safety">Sécurité : Mou3allim ne vérifie pas l'identité des professeurs. Vérifiez toujours l'identité et les références d'un professeur avant tout cours, pour la sécurité de votre famille.</span>
   </div>
   <div id="resultsContainer">
     <div class="results-grid" id="skeletonGrid"></div>
@@ -195,13 +195,14 @@
   function renderLevelChips() {
     const el = document.getElementById('levelChips');
     if (!el || !window._levels) return;
-    el.innerHTML = ['Tous les niveaux', ...window._levels].map(l => {
-      const active = (l === 'Tous les niveaux' && !state.level) || l === state.level;
-      return `<button class="chip ${active ? 'active' : ''}" data-level="${escapeHtml(l)}">${escapeHtml(l)}</button>`;
+    const allLabel = t('filter_all_levels');
+    el.innerHTML = [{ v: '__ALL__', label: allLabel }, ...window._levels.map(l => ({ v: l, label: l }))].map(item => {
+      const active = (item.v === '__ALL__' && !state.level) || item.v === state.level;
+      return `<button class="chip ${active ? 'active' : ''}" data-level="${escapeHtml(item.v)}">${escapeHtml(item.label)}</button>`;
     }).join('');
     el.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
       const v = btn.dataset.level;
-      state.level = v === 'Tous les niveaux' ? null : v;
+      state.level = v === '__ALL__' ? null : v;
       renderLevelChips();
       loadResults();
     }));
@@ -210,13 +211,14 @@
   function renderDegreeChips() {
     const el = document.getElementById('degreeChips');
     if (!el || !window._degrees) return;
-    el.innerHTML = ['Tous', ...window._degrees].map(d => {
-      const active = (d === 'Tous' && !state.degree) || d === state.degree;
-      return `<button class="chip ${active ? 'active' : ''}" data-degree="${escapeHtml(d)}">${escapeHtml(d)}</button>`;
+    const allLabel = t('filter_all_degrees');
+    el.innerHTML = [{ v: '__ALL__', label: allLabel }, ...window._degrees.map(d => ({ v: d, label: d }))].map(item => {
+      const active = (item.v === '__ALL__' && !state.degree) || item.v === state.degree;
+      return `<button class="chip ${active ? 'active' : ''}" data-degree="${escapeHtml(item.v)}">${escapeHtml(item.label)}</button>`;
     }).join('');
     el.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
       const v = btn.dataset.degree;
-      state.degree = v === 'Tous' ? null : v;
+      state.degree = v === '__ALL__' ? null : v;
       renderDegreeChips();
       loadResults();
     }));
@@ -263,22 +265,27 @@
   function updateCountLabel(hasMore) {
     const el = document.getElementById('resultCount');
     if (!el) return;
-    const plural = loadedCount === 1 ? 'professeur affiché' : 'professeurs affichés';
-    el.textContent = hasMore ? `${loadedCount} ${plural} — voir plus ci-dessous` : `${loadedCount} ${loadedCount === 1 ? 'professeur trouvé' : 'professeurs trouvés'}`;
+    if (hasMore) {
+      const plural = loadedCount === 1 ? t('search_count_shown_1') : t('search_count_shown_n');
+      el.textContent = `${loadedCount} ${plural} — ${t('search_see_below')}`;
+    } else {
+      const plural = loadedCount === 1 ? t('search_count_found_1') : t('search_count_found_n');
+      el.textContent = `${loadedCount} ${plural}`;
+    }
   }
 
   function renderLoadMore(hasMore, pageSize) {
     const wrap = document.getElementById('loadMoreWrap');
     if (!wrap) return;
     if (!hasMore) { wrap.innerHTML = ''; return; }
-    wrap.innerHTML = `<button id="loadMoreBtn" class="btn btn-primary" style="padding:12px 28px;">Voir plus de professeurs</button>`;
+    wrap.innerHTML = `<button id="loadMoreBtn" class="btn btn-primary" style="padding:12px 28px;">${t('search_load_more')}</button>`;
     document.getElementById('loadMoreBtn').addEventListener('click', () => loadMore(pageSize));
   }
 
   // Load the next page and APPEND (does not reset).
   async function loadMore(pageSize) {
     const btn = document.getElementById('loadMoreBtn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Chargement...'; }
+    if (btn) { btn.disabled = true; btn.textContent = t('search_loading'); }
     currentOffset += pageSize;
     try {
       const res = await api.searchTeachers({ subject: state.subject, governorate: state.governorate, area: state.area, level: state.level, degree: state.degree, q: state.q, offset: currentOffset });
@@ -289,7 +296,7 @@
       updateCountLabel(res.hasMore);
       renderLoadMore(res.hasMore, res.pageSize || pageSize);
     } catch (err) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Voir plus de professeurs'; }
+      if (btn) { btn.disabled = false; btn.textContent = t('search_load_more'); }
     }
   }
 
@@ -304,7 +311,7 @@
         <div class="info">
           <div class="teacher-name">${escapeHtml(t.full_name)}</div>
           <div class="teacher-loc">📍 ${escapeHtml(location)}</div>
-          <div class="teacher-subjects">${(t.subjects || []).map(s => escapeHtml(s.name)).join(' · ') || 'Aucune matière'}</div>
+          <div class="teacher-subjects">${(t.subjects || []).map(s => escapeHtml(s.name)).join(' · ') || t('search_no_subjects')}</div>
           ${t.degree ? `<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">${escapeHtml(t.degree)}${t.experience ? ' · ' + escapeHtml(t.experience) : ''}</div>` : ''}
           ${(t.levels && t.levels.length) ? `<div style="font-size:12px;color:var(--teal-dark);margin-bottom:4px;">${t.levels.slice(0,4).map(escapeHtml).join(', ')}${t.levels.length>4?'…':''}</div>` : ''}
           <div>${starsHtml(t.rating)} <span style="font-size:12px;color:var(--muted);">(${t.rating_count || 0})</span></div>
