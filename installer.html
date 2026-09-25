@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Installer l'application — Mou3allim</title>
+<link rel="stylesheet" href="src/style.css" />
+<style>
+  .inst-wrap { max-width: 680px; margin: 0 auto; padding: 36px 22px 80px; }
+  .inst-head { text-align: center; margin-bottom: 8px; }
+  .inst-head h1 { font-size: 30px; margin-bottom: 8px; }
+  .inst-head p { color: var(--muted); font-size: 15px; max-width: 480px; margin: 0 auto; }
+
+  .platform-tabs { display: flex; gap: 8px; justify-content: center; margin: 26px 0 22px; }
+  .ptab {
+    padding: 10px 22px; border-radius: 999px; border: 1.5px solid var(--border);
+    background: var(--card); font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer;
+  }
+  .ptab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+
+  .inapp-warning {
+    display: none; background: #FFF8E7; border: 1px solid #F0D48A; border-radius: 14px;
+    padding: 16px; margin-bottom: 22px; font-size: 14px; color: #7A5E12; line-height: 1.6;
+  }
+  .inapp-warning b { color: #6a4f0f; }
+  .copy-url {
+    display: flex; gap: 8px; margin-top: 10px; align-items: center;
+    background: #fff; border: 1px solid #E8D9A8; border-radius: 10px; padding: 8px 10px;
+  }
+  .copy-url code { flex: 1; font-size: 13px; color: var(--ink); word-break: break-all; }
+  .copy-url button { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+  .steps-list { list-style: none; padding: 0; margin: 0; }
+  .step-item {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px 18px; margin-bottom: 12px;
+  }
+  .step-badge {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--teal-tint); color: var(--teal-dark);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;
+  }
+  .step-body h3 { font-size: 16px; margin-bottom: 3px; font-family: 'Inter', sans-serif; font-weight: 700; }
+  .step-body p { font-size: 14px; color: var(--muted); line-height: 1.55; }
+  .step-icon { display: inline-flex; vertical-align: middle; margin: 0 2px; }
+
+  .android-btn-wrap { text-align: center; margin-top: 8px; }
+  .install-note { text-align: center; font-size: 13px; color: var(--muted); margin-top: 20px; }
+
+  body.rtl .step-item { flex-direction: row-reverse; }
+  body.rtl .step-body { text-align: right; }
+  body.rtl .copy-url { flex-direction: row-reverse; }
+</style>
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<div class="inst-wrap">
+  <div class="inst-head">
+    <h1 class="display" data-i18n="inst_title">Installez l'application Mou3allim</h1>
+    <p data-i18n="inst_sub">Ajoutez Mou3allim à votre écran d'accueil pour un accès rapide, comme une vraie application. C'est gratuit et ça prend 10 secondes.</p>
+  </div>
+
+  <div class="platform-tabs">
+    <button class="ptab" id="tabIos" data-i18n="inst_iphone">iPhone</button>
+    <button class="ptab" id="tabAndroid" data-i18n="inst_android">Android</button>
+  </div>
+
+  <div class="inapp-warning" id="inappWarning">
+    <b data-i18n="inst_inapp_title">⚠️ Ouvrez ce lien dans votre navigateur</b>
+    <div data-i18n="inst_inapp_body" style="margin-top:6px;">Vous êtes dans le navigateur de Facebook / Instagram. L'installation ne fonctionne que dans Safari (iPhone) ou Chrome (Android). Copiez l'adresse ci-dessous et ouvrez-la dans votre navigateur.</div>
+    <div class="copy-url">
+      <code id="siteUrl">mou3allim.com/installer.html</code>
+      <button id="copyUrlBtn" data-i18n="inst_copy">Copier</button>
+    </div>
+  </div>
+
+  <!-- iPhone steps -->
+  <div id="iosSteps">
+    <ol class="steps-list">
+      <li class="step-item">
+        <div class="step-badge">1</div>
+        <div class="step-body">
+          <h3 data-i18n="inst_ios_s1_t">Ouvrez le site dans Safari</h3>
+          <p data-i18n="inst_ios_s1_d">Assurez-vous d'utiliser Safari (le navigateur bleu d'Apple), pas Facebook ni Chrome.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-badge">2</div>
+        <div class="step-body">
+          <h3 data-i18n="inst_ios_s2_t">Appuyez sur « Partager »</h3>
+          <p data-i18n="inst_ios_s2_d">C'est l'icône carrée avec une flèche vers le haut ⬆️, en bas de l'écran.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-badge">3</div>
+        <div class="step-body">
+          <h3 data-i18n="inst_ios_s3_t">« Sur l'écran d'accueil »</h3>
+          <p data-i18n="inst_ios_s3_d">Faites défiler le menu et appuyez sur « Sur l'écran d'accueil » (Add to Home Screen).</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-badge">4</div>
+        <div class="step-body">
+          <h3 data-i18n="inst_ios_s4_t">Appuyez sur « Ajouter »</h3>
+          <p data-i18n="inst_ios_s4_d">L'icône Mou3allim apparaît sur votre écran d'accueil. Ouvrez-la comme une application !</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Android steps -->
+  <div id="androidSteps" style="display:none;">
+    <div class="android-btn-wrap" id="androidLiveInstall"></div>
+    <ol class="steps-list">
+      <li class="step-item">
+        <div class="step-badge">1</div>
+        <div class="step-body">
+          <h3 data-i18n="inst_and_s1_t">Ouvrez le site dans Chrome</h3>
+          <p data-i18n="inst_and_s1_d">Utilisez Chrome, pas le navigateur de Facebook.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-badge">2</div>
+        <div class="step-body">
+          <h3 data-i18n="inst_and_s2_t">Appuyez sur le bouton vert « Installer »</h3>
+          <p data-i18n="inst_and_s2_d">Un bouton vert « 📲 Installer l'application » apparaît en bas de l'écran. S'il n'apparaît pas, ouvrez le menu ⋮ de Chrome et choisissez « Installer l'application ».</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <div class="step-badge">3</div>
+        <div class="step-body">
+          <h3 data-i18n="inst_and_s3_t">Confirmez</h3>
+          <p data-i18n="inst_and_s3_d">L'icône Mou3allim s'ajoute à votre écran d'accueil. Ouvrez-la comme une application !</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <p class="install-note" data-i18n="inst_note">Besoin d'aide ? Contactez-nous sur WhatsApp et nous vous guiderons.</p>
+</div>
+
+<script src="src/api.js"></script>
+<script src="src/i18n.js"></script>
+<script src="src/nav.js"></script>
+<script>
+  renderNav();
+
+  // --- extra translation strings for this page (merged into the i18n dict) ---
+  const instStrings = {
+    fr: {
+      inst_title: "Installez l'application Mou3allim",
+      inst_sub: "Ajoutez Mou3allim à votre écran d'accueil pour un accès rapide, comme une vraie application. C'est gratuit et ça prend 10 secondes.",
+      inst_iphone: 'iPhone', inst_android: 'Android',
+      inst_inapp_title: '⚠️ Ouvrez ce lien dans votre navigateur',
+      inst_inapp_body: "Vous êtes dans le navigateur de Facebook / Instagram. L'installation ne fonctionne que dans Safari (iPhone) ou Chrome (Android). Copiez l'adresse ci-dessous et ouvrez-la dans votre navigateur.",
+      inst_copy: 'Copier', inst_copied: 'Copié ✓',
+      inst_ios_s1_t: 'Ouvrez le site dans Safari', inst_ios_s1_d: "Assurez-vous d'utiliser Safari (le navigateur bleu d'Apple), pas Facebook ni Chrome.",
+      inst_ios_s2_t: 'Appuyez sur « Partager »', inst_ios_s2_d: "C'est l'icône carrée avec une flèche vers le haut ⬆️, en bas de l'écran.",
+      inst_ios_s3_t: "« Sur l'écran d'accueil »", inst_ios_s3_d: "Faites défiler le menu et appuyez sur « Sur l'écran d'accueil » (Add to Home Screen).",
+      inst_ios_s4_t: 'Appuyez sur « Ajouter »', inst_ios_s4_d: "L'icône Mou3allim apparaît sur votre écran d'accueil. Ouvrez-la comme une application !",
+      inst_and_s1_t: 'Ouvrez le site dans Chrome', inst_and_s1_d: 'Utilisez Chrome, pas le navigateur de Facebook.',
+      inst_and_s2_t: 'Appuyez sur le bouton vert « Installer »', inst_and_s2_d: "Un bouton vert « 📲 Installer l'application » apparaît en bas de l'écran. S'il n'apparaît pas, ouvrez le menu ⋮ de Chrome et choisissez « Installer l'application ».",
+      inst_and_s3_t: 'Confirmez', inst_and_s3_d: "L'icône Mou3allim s'ajoute à votre écran d'accueil. Ouvrez-la comme une application !",
+      inst_note: 'Besoin d\'aide ? Contactez-nous sur WhatsApp et nous vous guiderons.',
+      inst_install_now: "📲 Installer maintenant",
+    },
+    ar: {
+      inst_title: 'ثبّت تطبيق Mou3allim',
+      inst_sub: 'أضف Mou3allim إلى شاشتك الرئيسية للوصول السريع، مثل تطبيق حقيقي. مجاني ويستغرق 10 ثوانٍ.',
+      inst_iphone: 'آيفون', inst_android: 'أندرويد',
+      inst_inapp_title: '⚠️ افتح هذا الرابط في متصفحك',
+      inst_inapp_body: 'أنت داخل متصفح فيسبوك / إنستغرام. التثبيت يعمل فقط في Safari (آيفون) أو Chrome (أندرويد). انسخ العنوان أدناه وافتحه في متصفحك.',
+      inst_copy: 'نسخ', inst_copied: 'تم النسخ ✓',
+      inst_ios_s1_t: 'افتح الموقع في Safari', inst_ios_s1_d: 'تأكد من استعمال Safari (متصفح آبل الأزرق)، وليس فيسبوك أو Chrome.',
+      inst_ios_s2_t: 'اضغط على « مشاركة »', inst_ios_s2_d: 'إنه الأيقونة المربعة مع سهم للأعلى ⬆️، في أسفل الشاشة.',
+      inst_ios_s3_t: '« إلى الشاشة الرئيسية »', inst_ios_s3_d: 'مرّر القائمة واضغط على « إلى الشاشة الرئيسية » (Add to Home Screen).',
+      inst_ios_s4_t: 'اضغط على « إضافة »', inst_ios_s4_d: 'ستظهر أيقونة Mou3allim على شاشتك الرئيسية. افتحها مثل تطبيق!',
+      inst_and_s1_t: 'افتح الموقع في Chrome', inst_and_s1_d: 'استعمل Chrome، وليس متصفح فيسبوك.',
+      inst_and_s2_t: 'اضغط على الزر الأخضر « تثبيت »', inst_and_s2_d: 'يظهر زر أخضر « 📲 تثبيت التطبيق » في أسفل الشاشة. إذا لم يظهر، افتح قائمة Chrome ⋮ واختر « تثبيت التطبيق ».',
+      inst_and_s3_t: 'أكّد', inst_and_s3_d: 'تُضاف أيقونة Mou3allim إلى شاشتك الرئيسية. افتحها مثل تطبيق!',
+      inst_note: 'تحتاج مساعدة؟ تواصل معنا عبر واتساب وسنرشدك.',
+      inst_install_now: '📲 ثبّت الآن',
+    }
+  };
+  // merge into the shared translations object so t() finds them
+  if (typeof translations !== 'undefined') {
+    Object.keys(instStrings).forEach(l => { Object.assign(translations[l] = translations[l] || {}, instStrings[l]); });
+  }
+  applyLang();
+
+  const ua = navigator.userAgent || '';
+  const isAndroid = /Android/i.test(ua);
+  const isInApp = /FBAN|FBAV|Instagram|Line|Twitter|FB_IAB/i.test(ua);
+
+  function showPlatform(p) {
+    document.getElementById('tabIos').classList.toggle('active', p === 'ios');
+    document.getElementById('tabAndroid').classList.toggle('active', p === 'android');
+    document.getElementById('iosSteps').style.display = p === 'ios' ? '' : 'none';
+    document.getElementById('androidSteps').style.display = p === 'android' ? '' : 'none';
+  }
+  document.getElementById('tabIos').addEventListener('click', () => showPlatform('ios'));
+  document.getElementById('tabAndroid').addEventListener('click', () => showPlatform('android'));
+  // Default to the visitor's platform
+  showPlatform(isAndroid ? 'android' : 'ios');
+
+  // In-app browser warning (Facebook/Instagram)
+  if (isInApp) {
+    document.getElementById('inappWarning').style.display = 'block';
+    document.getElementById('siteUrl').textContent = location.host + '/installer.html';
+  }
+  document.getElementById('copyUrlBtn').addEventListener('click', () => {
+    const url = location.origin + '/installer.html';
+    navigator.clipboard && navigator.clipboard.writeText(url);
+    const b = document.getElementById('copyUrlBtn');
+    b.textContent = t('inst_copied');
+    setTimeout(() => { b.textContent = t('inst_copy'); }, 1800);
+  });
+
+  // Android: if the browser offers install, surface a live button here too.
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); deferred = e;
+    const wrap = document.getElementById('androidLiveInstall');
+    wrap.innerHTML = `<button class="btn btn-primary" id="instNowBtn" style="margin-bottom:14px;">${t('inst_install_now')}</button>`;
+    document.getElementById('instNowBtn').addEventListener('click', async () => {
+      deferred.prompt(); await deferred.userChoice; deferred = null;
+      wrap.innerHTML = '';
+    });
+  });
+</script>
+</body>
+</html>
