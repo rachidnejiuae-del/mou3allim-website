@@ -13,7 +13,13 @@
     background: linear-gradient(180deg, #FAF8F4 0%, #F3EFE6 100%);
   }
   .hero-inner {
-    max-width: 720px; margin: 0 auto; text-align: center; position: relative; z-index: 2;
+    max-width: 1080px; margin: 0 auto; position: relative; z-index: 2;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+  }
+  .hero-text { text-align: left; }
+  .hero-photo img {
+    width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+    display: block; aspect-ratio: 4/3; object-fit: cover; background: var(--teal-tint);
   }
   .hero .eyebrow {
     display: inline-flex; align-items: center; gap: 8px;
@@ -26,9 +32,9 @@
   }
   .hero h1 em { font-style: normal; color: var(--teal); }
   .hero p.lede {
-    font-size: 18px; color: var(--ink-soft); max-width: 520px; margin: 0 auto 36px;
+    font-size: 18px; color: var(--ink-soft); max-width: 520px; margin: 0 0 36px;
   }
-  .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .hero-actions { display: flex; gap: 14px; justify-content: flex-start; flex-wrap: wrap; }
   .hero-search {
     max-width: 640px; margin: 40px auto 0; background: var(--card);
     border-radius: var(--radius-lg); padding: 8px; box-shadow: var(--shadow-lg);
@@ -96,7 +102,15 @@
     .hero h1 { font-size: 34px; }
     .steps, .split { grid-template-columns: 1fr; }
     .hero-search { flex-direction: column; }
+    .hero-inner { grid-template-columns: 1fr; gap: 28px; text-align: center; }
+    .hero-text { text-align: center; }
+    .hero-actions { justify-content: center; }
+    .hero p.lede { margin: 0 auto 28px; }
+    .hero-photo { order: -1; }
   }
+  body.rtl .hero-text { text-align: right; }
+  body.rtl .hero-actions { justify-content: flex-end; }
+  body.rtl .hero p.lede { margin: 0 0 36px auto; }
 </style>
 </head>
 <body>
@@ -112,12 +126,18 @@
 <section class="hero">
   <div class="tile-bg"></div>
   <div class="hero-inner">
-    <span class="eyebrow" data-i18n="home_eyebrow">🎓 100% Tunisie · Gratuit pour les parents</span>
-    <h1 class="display"><span data-i18n="home_h1_1">Le bon professeur,</span> <em data-i18n="home_h1_2">partout en Tunisie</em></h1>
-    <p class="lede" data-i18n="home_lede">Recherchez par matière, gouvernorat et quartier. Comparez les tarifs, lisez les avis, appelez directement. Aucun frais pour les parents.</p>
-    <div class="hero-actions">
-      <a href="search.html" class="btn btn-primary" data-i18n="home_cta_search">Trouver un professeur</a>
-      <a href="auth.html?role=teacher" class="btn btn-outline" data-i18n="home_cta_teacher">Je suis professeur</a>
+    <div class="hero-text">
+      <span class="eyebrow" data-i18n="home_eyebrow">🎓 100% Tunisie · Gratuit pour les parents</span>
+      <h1 class="display"><span data-i18n="home_h1_1">Le bon professeur,</span> <em data-i18n="home_h1_2">partout en Tunisie</em></h1>
+      <p class="lede" data-i18n="home_lede">Recherchez par matière, gouvernorat et quartier. Comparez les tarifs, lisez les avis, appelez directement. Aucun frais pour les parents.</p>
+      <div class="hero-actions">
+        <a href="search.html" class="btn btn-primary" data-i18n="home_cta_search">Trouver un professeur</a>
+        <a href="auth.html?role=teacher" class="btn btn-outline" data-i18n="home_cta_teacher">Je suis professeur</a>
+      </div>
+    </div>
+    <div class="hero-photo">
+      <img src="hero.jpg" alt="Un parent et son enfant cherchent un professeur sur Mou3allim"
+           onerror="this.style.display='none'" />
     </div>
   </div>
 </section>
