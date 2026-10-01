@@ -1,6 +1,7 @@
 // Shared navigation bar, injected into every page's <div id="nav-root"></div>
 function renderNav(active) {
-  // ---- PWA setup (runs once per page load, on every page that uses the nav) ----
+  // ---- Meta Pixel + PWA setup (run once per page load, on every page) ----
+  setupPixel();
   setupPWA();
 
   const root = document.getElementById('nav-root');
@@ -65,6 +66,36 @@ function renderNav(active) {
   if (logoutBtn) logoutBtn.addEventListener('click', () => { auth.clear(); window.location.href = 'index.html'; });
 
   applyLang();
+}
+
+// ---- Meta Pixel (base PageView on every page; Contact event on contact clicks) ----
+const META_PIXEL_ID = '2149623818956311';
+function setupPixel() {
+  try {
+    if (window.fbq) return; // already set up
+    // Standard Meta Pixel bootstrap
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    window.fbq('init', META_PIXEL_ID);
+    window.fbq('track', 'PageView');
+
+    // Wrap api.track so contact clicks also report to the Pixel as "Contact".
+    if (typeof api !== 'undefined' && api.track && !api._pixelWrapped) {
+      const _origTrack = api.track;
+      api.track = function(event, teacherId) {
+        try {
+          if (event === 'call_click' || event === 'whatsapp_click') {
+            window.fbq && window.fbq('track', 'Contact', { method: event === 'call_click' ? 'phone' : 'whatsapp' });
+          }
+        } catch (e) {}
+        return _origTrack(event, teacherId);
+      };
+      api._pixelWrapped = true;
+    }
+  } catch (e) {}
 }
 
 // ---- Progressive Web App: manifest + tags + service worker + install hints ----
